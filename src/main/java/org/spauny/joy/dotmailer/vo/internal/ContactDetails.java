@@ -9,6 +9,7 @@ import lombok.Data;
 @Data
 public class ContactDetails implements ContactDetailsInterface {
     
+    private String ref;
     private String uid;
     private String firstName;
     private String lastName;

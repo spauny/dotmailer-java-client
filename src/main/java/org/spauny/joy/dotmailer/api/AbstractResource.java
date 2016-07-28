@@ -176,7 +176,7 @@ public abstract class AbstractResource {
     }
 
     protected boolean validBlankResponse(ResponseVO response) {
-        return response != null && response.getStatusCode() == 200;
+        return response != null && (response.getStatusCode() == 200 || response.getStatusCode() == 201 || response.getStatusCode() == 202);
     }
 
 }
