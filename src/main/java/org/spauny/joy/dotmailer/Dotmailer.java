@@ -1,18 +1,16 @@
 package org.spauny.joy.dotmailer;
 
-import com.google.common.collect.Lists;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.spauny.joy.dotmailer.api.AccountInfoResource;
 import org.spauny.joy.dotmailer.api.AddressBookResource;
+import org.spauny.joy.dotmailer.api.CampaignResource;
 import org.spauny.joy.dotmailer.api.ContactResource;
 import org.spauny.joy.dotmailer.util.DefaultEndpoints;
 import org.spauny.joy.dotmailer.util.InvalidAccountException;
 import org.spauny.joy.dotmailer.vo.api.AccountInfo;
-import org.spauny.joy.dotmailer.vo.api.Contact;
 import org.spauny.joy.dotmailer.vo.api.DMProperty;
-import org.spauny.joy.dotmailer.vo.api.KeyVal;
 import org.spauny.joy.dotmailer.vo.internal.DMAccessCredentials;
 
 /**
@@ -31,20 +29,21 @@ public class Dotmailer {
     private AccountInfoResource accountInfoResource;
     private AddressBookResource addressBookResource;
     private ContactResource contactResource;
+    private CampaignResource campaignResource;
 
     private Dotmailer(DMAccessCredentials accessCredentials) {
         this.accessCredentials = accessCredentials;
         this.accountInfoResource = new AccountInfoResource(accessCredentials);
         this.addressBookResource = new AddressBookResource(accessCredentials);
         this.contactResource = new ContactResource(accessCredentials);
+        this.campaignResource = new CampaignResource(accessCredentials);
     }
 
     /**
-     * Builds Dotmailer API Client Facade using default API url and version.
-     * Default API URL: https://r1-api.dotmailer.com Default API version: /v2
+     * Builds Dotmailer API Client Facade using default API url and version. Default API URL:
+     * https://r1-api.dotmailer.com Default API version: /v2
      * <b>PLEASE NOTE:</b> If you do not know your API url then use the
-     * <b>autobuild</b> method to automatically detect your account's regional
-     * API
+     * <b>autobuild</b> method to automatically detect your account's regional API
      *
      * @param username
      * @param password
@@ -60,11 +59,11 @@ public class Dotmailer {
     }
 
     /**
-     * Builds Dotmailer API Client Facade using account info to automatically
-     * detect your regional API url. Uses /v2 as default API version
+     * Builds Dotmailer API Client Facade using account info to automatically detect your regional API url. Uses /v2 as
+     * default API version
      * <b>PLEASE NOTE:</b> If you already know your API url use the appropriate
-     * <b>build</b> method: Use standard build for default URL:
-     * https://r1-api.dotmailer.com or build with custom API URL
+     * <b>build</b> method: Use standard build for default URL: https://r1-api.dotmailer.com or build with custom API
+     * URL
      *
      * @param username
      * @param password
@@ -88,8 +87,7 @@ public class Dotmailer {
     }
 
     /**
-     * Builds Dotmailer API Client Facade using custom API url and default
-     * version. Default API version: /v2
+     * Builds Dotmailer API Client Facade using custom API url and default version. Default API version: /v2
      *
      * @param username
      * @param password
@@ -106,8 +104,7 @@ public class Dotmailer {
     }
 
     /**
-     * Builds Dotmailer API Client Facade using custom API url and custom
-     * version.
+     * Builds Dotmailer API Client Facade using custom API url and custom version.
      *
      * @param username
      * @param password
@@ -125,8 +122,7 @@ public class Dotmailer {
     }
 
     /**
-     * Returns an account info resource that allows you to interact with all
-     * account info endpoints
+     * Returns an account info resource that allows you to interact with all account info endpoints
      *
      * @return
      */
@@ -135,8 +131,7 @@ public class Dotmailer {
     }
 
     /**
-     * returns an account info resource that allows you to interact with all
-     * account info endpoints
+     * returns an account info resource that allows you to interact with all account info endpoints
      *
      * @return
      */
@@ -145,8 +140,7 @@ public class Dotmailer {
     }
 
     /**
-     * returns a contact resource that allows you to interact with all contact
-     * endpoints
+     * returns a contact resource that allows you to interact with all contact endpoints
      *
      * @return
      */
@@ -154,25 +148,13 @@ public class Dotmailer {
         return contactResource;
     }
 
-    public static void main(String args[]) {
-        Dotmailer dotmailer = Dotmailer.build("", "");
-//        List<PersonalisedContact<ContactDetails>> contacts = dotmailer.addressBook().listPersonalizedContacts(4526344L, ContactDetails.class, new ContactDeserializer(), 
-//                new TypeToken<List<PersonalisedContact<ContactDetails>>>() {}, true, 10).get();
-//        contacts.forEach(contact -> {
-//            contact.getDetails().getFirstName();
-//        });
-
-//        Optional<List<Contact>> contacts = dotmailer.addressBook().listContacts(4526344L, Boolean.FALSE, 100000);
-//        System.out.println("SIZE: " + contacts.get().size());
-//        System.out.println(contacts.get());
-//        System.out.println(dotmailer.addressBook().get(4526344L).get());
-        System.out.println(dotmailer.contact().get("0.002circle@gmail.com"));
-
-        Contact contact = new Contact();
-        contact.setId("255591606");
-        contact.setEmail("0.002circle@gmail.com");
-        contact.setDataFields(Lists.newArrayList(new KeyVal("REF_NAME", "pothrf769812")));
-        Optional<Contact> updateContact = dotmailer.contact().update(contact);
-        System.out.println(updateContact.get());
+    /**
+     * returns a campaign resource that allows you to interact with all campaign endpoints
+     *
+     * @return
+     */
+    public CampaignResource campaign() {
+        return campaignResource;
     }
+
 }

@@ -2,6 +2,7 @@ package org.spauny.joy.dotmailer.api;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonDeserializer;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -80,6 +81,19 @@ public abstract class AbstractResource {
         return Optional.empty();
     }
     
+    protected <T> Optional<T> postFileAndGet(String resourcePath, String filePath, Class<T> responseClass) {
+        WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
+        
+        File postedFile = new File(filePath);
+        ResponseVO response = request.post(postedFile);
+        postedFile.delete();
+        
+        if (validResponse(response)) {
+            return Optional.of(response.castJsonResponse(responseClass));
+        }
+        return Optional.empty();
+    }
+    
     protected <T> Optional<T> putAndGet(String resourcePath, T objectToPost) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
         ResponseVO response = request.put(objectToPost);
@@ -142,7 +156,7 @@ public abstract class AbstractResource {
                     newResultsSize = newResults.size();
                 }
             } catch (Exception ex) {
-                log.debug(ex.getMessage());
+                log.error("sendAndGetFullList: error occured: {}", ex);
                 newResultsSize = 0;
             }
         } while (newResultsSize != 0 && (limit <= 0 || allResults.size() < limit));
@@ -164,6 +178,10 @@ public abstract class AbstractResource {
 
     protected String pathWithParam(String path, String param) {
         return String.format(path, param);
+    }
+    
+    protected String pathWithIdAndParam(String path, Long id, String param) {
+        return String.format(path, id, param);
     }
 
     protected String addAttrAndValueToPath(String path, String attrName, String value) {

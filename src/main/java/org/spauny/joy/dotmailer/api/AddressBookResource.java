@@ -2,15 +2,19 @@ package org.spauny.joy.dotmailer.api;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonDeserializer;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
+import org.joda.time.DateTime;
+import static org.spauny.joy.dotmailer.api.AbstractResource.DM_DATE_FORMAT;
 import org.spauny.joy.dotmailer.util.DefaultEndpoints;
 import org.spauny.joy.dotmailer.util.PersonalizedContactsProcessFunction;
 import org.spauny.joy.dotmailer.vo.api.AddressBook;
 import org.spauny.joy.dotmailer.vo.api.Contact;
 import org.spauny.joy.dotmailer.vo.api.PersonalisedContact;
+import org.spauny.joy.dotmailer.vo.api.SuppressedContact;
 import org.spauny.joy.dotmailer.vo.internal.DMAccessCredentials;
 
 /**
@@ -34,6 +38,16 @@ public class AddressBookResource extends AbstractResource {
         return sendAndGet(path, AddressBook.class);
     }
     
+    /**
+     * List address book contacts. 
+     * DEFAULT ATTRS: No limit and without full data
+     * @param addressBookId
+     * @return
+     */
+    public Optional<List<Contact>> listContacts(Long addressBookId) {
+        return listContacts(addressBookId, false, 0);
+    }
+    
     public Optional<List<Contact>> listContacts(Long addressBookId, Boolean withFullData) {
         return listContacts(addressBookId, withFullData, 0);
     }
@@ -47,6 +61,33 @@ public class AddressBookResource extends AbstractResource {
             return sendAndGetFullList(path, new TypeToken<List<Contact>>() {}, maxSelect, limit);
         }
         return sendAndGetFullList(path, new TypeToken<List<Contact>>() {});
+    }
+    
+    /**
+     * Gets a list of contacts who have unsubscribed since a given date from a given address book. No limit
+     * @param addressBookId
+     * @param since
+     * @return
+     */
+    public Optional<List<SuppressedContact>> listUnsubscribedContacts(Long addressBookId, Date since) {
+        return listUnsubscribedContacts(addressBookId, since, 0);
+    }
+    
+    /**
+     * Gets a list of contacts who have unsubscribed since a given date from a given address book
+     * @param addressBookId
+     * @param since
+     * @param limit
+     * @return
+     */
+    public Optional<List<SuppressedContact>> listUnsubscribedContacts(Long addressBookId, Date since, int limit) {
+        String path = pathWithIdAndParam(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_UNSUBSCRIBED_SINCE_DATE.getPath(), addressBookId, new DateTime(since).toString(DM_DATE_FORMAT));
+        
+        if (limit > 0) {
+            int maxSelect = limit >= DEFAULT_MAX_SELECT ? DEFAULT_MAX_SELECT : limit;
+            return sendAndGetFullList(path, new TypeToken<List<SuppressedContact>>() {}, maxSelect, limit);
+        }
+        return sendAndGetFullList(path, new TypeToken<List<SuppressedContact>>() {});
     }
     
     /**
@@ -104,7 +145,7 @@ public class AddressBookResource extends AbstractResource {
     
     
     /**
-     * This is a very powerful method that allows you to process a list of personalized contacts by deserializing the dataFields map (key, value) returned by DotMailer for each contact and apply a processFunction (callback) for each contact.
+     * This is a very powerful method that allows you to process a list of personalized contacts by deserializing the dataFields map (key, value) returned by DotMailer for each contact and apply a processFunction (callback) for each bulk list of contacts.
      * To be able to do this, you have to create a details class for your contact, a JsonDeserializer object where your build the object of the class mentioned before, a type token that wraps all this structure, used for type inference and provide a process function (callback method) that will be called for each personalized contact
      * Please check github repo's wiki for more info on how to use this amazing method!
      * DEFAULT ATTRS: This will automatically process contacts with full data and has no limit set.
@@ -120,7 +161,7 @@ public class AddressBookResource extends AbstractResource {
     
     
     /**
-     * This is a very powerful method that allows you to process a list of personalized contacts by deserializing the dataFields map (key, value) returned by DotMailer for each contact and apply a processFunction (callback) for each contact.
+     * This is a very powerful method that allows you to process a list of personalized contacts by deserializing the dataFields map (key, value) returned by DotMailer for each contact and apply a processFunction (callback) for each bulk list of contacts.
      * To be able to do this, you have to create a details class for your contact, a JsonDeserializer object where your build the object of the class mentioned before, a type token that wraps all this structure, used for type inference and provide a process function (callback method) that will be called for each personalized contact
      * Please check github repo's wiki for more info on how to use this amazing method!
      * @param addressBookId
@@ -129,6 +170,7 @@ public class AddressBookResource extends AbstractResource {
      * @param typeToken
      * @param withFullData
      * @param limit
+     * @param processFunction
      * @return
      */
     public <T> void processFullList(Long addressBookId, Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken, boolean withFullData, int limit,
