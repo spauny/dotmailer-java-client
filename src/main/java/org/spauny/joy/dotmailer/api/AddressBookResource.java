@@ -23,8 +23,7 @@ import org.spauny.joy.dotmailer.vo.internal.DMAccessCredentials;
  */
 @Slf4j
 public class AddressBookResource extends AbstractResource {
-    private static final int MAX_CONTACTS_TO_PROCESS_PER_STEP = 50000;
-    
+
     public AddressBookResource(DMAccessCredentials accessCredentials) {
         super(accessCredentials);
     }

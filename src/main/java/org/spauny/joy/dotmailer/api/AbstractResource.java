@@ -28,9 +28,13 @@ public abstract class AbstractResource {
     private static final String QUESTION = "?";
     private static final String EQUAL = "=";
     protected static final int DEFAULT_MAX_SELECT = 1000;
+    protected static final int MAX_CONTACTS_TO_PROCESS_PER_STEP = 50000;
+    
+    @Getter
+    private long recordsSynced = 0l;
 
     @Getter
-    private DMAccessCredentials accessCredentials;
+    private final DMAccessCredentials accessCredentials;
 
     public AbstractResource(DMAccessCredentials accessCredentials) {
         this.accessCredentials = accessCredentials;
@@ -137,7 +141,8 @@ public abstract class AbstractResource {
 
         int skip = -maxSelect + initialSkip;
         int newResultsSize = 0;
-        List<T> allResults = new ArrayList<>();
+        List<T> allResults = new ArrayList<>(DEFAULT_MAX_SELECT);
+        this.recordsSynced = 0;
         do {
             try {
                 skip += maxSelect;
@@ -154,6 +159,7 @@ public abstract class AbstractResource {
                     }
                     allResults.addAll(newResults);
                     newResultsSize = newResults.size();
+                    this.recordsSynced += allResults.size();
                 }
             } catch (Exception ex) {
                 log.error("sendAndGetFullList: error occured: {}", ex);

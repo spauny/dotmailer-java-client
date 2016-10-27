@@ -1,18 +1,22 @@
 package org.spauny.joy.dotmailer.api;
 
 import com.google.common.reflect.TypeToken;
+import com.google.gson.JsonDeserializer;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.joda.time.DateTime;
 import static org.spauny.joy.dotmailer.api.AbstractResource.DEFAULT_MAX_SELECT;
 import org.spauny.joy.dotmailer.util.CsvUtil;
 import org.spauny.joy.dotmailer.util.DefaultEndpoints;
+import org.spauny.joy.dotmailer.util.PersonalizedContactsProcessFunction;
 import org.spauny.joy.dotmailer.vo.api.AddressBook;
 import org.spauny.joy.dotmailer.vo.api.Contact;
 import org.spauny.joy.dotmailer.vo.api.JobReport;
 import org.spauny.joy.dotmailer.vo.api.JobStatus;
+import org.spauny.joy.dotmailer.vo.api.PersonalisedContact;
 import org.spauny.joy.dotmailer.vo.api.SuppressedContact;
 import org.spauny.joy.dotmailer.vo.internal.DMAccessCredentials;
 import org.supercsv.cellprocessor.ift.CellProcessor;
@@ -21,6 +25,7 @@ import org.supercsv.cellprocessor.ift.CellProcessor;
  *
  * @author iulian
  */
+@Slf4j
 public class ContactResource extends AbstractResource {
     
     public ContactResource(DMAccessCredentials accessCredentials) {
@@ -102,6 +107,109 @@ public class ContactResource extends AbstractResource {
         }
         return sendAndGetFullList(path, new TypeToken<List<Contact>>() {});
     }
+    
+    
+    /**
+     * This is a very powerful method that allows you to create a list of personalized contacts by deserializing the dataFields map (key, value) returned by DotMailer for each contact.
+     * To be able to do this, you have to create a details class for your contact, a JsonDeserializer object where your build the object of the class mentioned before and a type token that wraps all this structure, used for type inference.
+     * Please check github repo's wiki for more info on how to use this amazing method!
+     * @param clazz
+     * @param jsonDeserializer
+     * @param typeToken
+     * @param withFullData
+     * @param limit
+     * @return
+     */
+    public <T> Optional<List<PersonalisedContact<T>>> listPersonalizedContacts(Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken, 
+            Boolean withFullData, int limit) {
+        
+        String initialPath = addAttrAndValueToPath(DefaultEndpoints.CONTACTS.getPath(), WITH_FULL_DATA_ATTR, BooleanUtils.toString(withFullData, "true", "false", "false"));
+        
+        int maxSelect = limit <= 0 || limit >= DEFAULT_MAX_SELECT ? DEFAULT_MAX_SELECT : limit;
+        return sendAndGetFullList(initialPath, clazz, jsonDeserializer, typeToken, maxSelect, limit);
+    }
+    
+    /**
+     * This is a very powerful method that allows you to create a list of personalized contacts by deserializing the dataFields map (key, value) returned by DotMailer for each contact.
+     * To be able to do this, you have to create a details class for your contact, a JsonDeserializer object where your build the object of the class mentioned before and a type token that wraps all this structure, used for type inference.
+     * Please check github repo's wiki for more info on how to use this amazing method!
+     * DEFAULT ATTRS: This request has no limit set.
+     * @param clazz
+     * @param jsonDeserializer
+     * @param typeToken
+     * @param withFullData
+     * @return
+     */
+    public <T> Optional<List<PersonalisedContact<T>>> listPersonalizedContacts(Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken, Boolean withFullData) {
+        return listPersonalizedContacts(clazz, jsonDeserializer, typeToken, withFullData, 0);
+    }
+    
+    /**
+     * This is a very powerful method that allows you to create a list of personalized contacts by deserializing the dataFields map (key, value) returned by DotMailer for each contact.
+     * To be able to do this, you have to create a details class for your contact, a JsonDeserializer object where your build the object of the class mentioned before and a type token that wraps all this structure, used for type inference.
+     * Please check github repo's wiki for more info on how to use this amazing method!
+     * DEFAULT ATTRS: This will automatically return with full data and has no limit set.
+     * @param clazz
+     * @param jsonDeserializer
+     * @param typeToken
+     * @return
+     */
+    public <T> Optional<List<PersonalisedContact<T>>> listPersonalizedContacts(Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken) {
+        return listPersonalizedContacts(clazz, jsonDeserializer, typeToken, true, 0);
+    }
+    
+    
+    /**
+     * This is a very powerful method that allows you to process a list of personalized contacts by deserializing the dataFields map (key, value) returned by DotMailer for each contact and apply a processFunction (callback) for each bulk list of contacts.
+     * To be able to do this, you have to create a details class for your contact, a JsonDeserializer object where your build the object of the class mentioned before, a type token that wraps all this structure, used for type inference and provide a process function (callback method) that will be called for each personalized contact
+     * Please check github repo's wiki for more info on how to use this amazing method!
+     * DEFAULT ATTRS: This will automatically process contacts with full data and has no limit set.
+     * @param addressBookId
+     * @param clazz
+     * @param jsonDeserializer
+     * @param typeToken
+     * @return
+     */
+    public <T> void processFullList(Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken, PersonalizedContactsProcessFunction<T> processFunction) {
+        processFullList(clazz, jsonDeserializer, typeToken, true, 0, processFunction);
+    }
+    
+    
+    /**
+     * This is a very powerful method that allows you to process a list of personalized contacts by deserializing the dataFields map (key, value) returned by DotMailer for each contact and apply a processFunction (callback) for each bulk list of contacts.
+     * To be able to do this, you have to create a details class for your contact, a JsonDeserializer object where your build the object of the class mentioned before, a type token that wraps all this structure, used for type inference and provide a process function (callback method) that will be called for each personalized contact
+     * Please check github repo's wiki for more info on how to use this amazing method!
+     * @param clazz
+     * @param jsonDeserializer
+     * @param typeToken
+     * @param withFullData
+     * @param limit
+     * @param processFunction
+     * @return
+     */
+    public <T> void processFullList(Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken, boolean withFullData, int limit,
+            PersonalizedContactsProcessFunction<T> processFunction) {
+        
+        // unfortunately there is no way to get a count of account contacts. We'll have to process until we hit bottom :)
+        log.info("STARTING TO PROCESS ALL CONTACTS");
+        
+        String initialPath = addAttrAndValueToPath(DefaultEndpoints.CONTACTS.getPath(), WITH_FULL_DATA_ATTR, BooleanUtils.toString(withFullData, "true", "false"));
+        
+        int maxSelect = limit <= 0 || limit >= DEFAULT_MAX_SELECT ? DEFAULT_MAX_SELECT : limit;
+        
+        int skip = 0;
+        
+        Optional<List<PersonalisedContact<T>>> contacts;
+        do {
+            contacts = sendAndGetFullList(initialPath, clazz, jsonDeserializer, typeToken, maxSelect, MAX_CONTACTS_TO_PROCESS_PER_STEP, skip);
+            if (contacts.isPresent()) {
+                processFunction.accept(contacts.get());
+            }
+            skip += MAX_CONTACTS_TO_PROCESS_PER_STEP;
+        } while (contacts.isPresent() && !contacts.get().isEmpty());
+    }
+    
+    
     
     
     /**
