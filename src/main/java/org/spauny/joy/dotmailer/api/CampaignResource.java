@@ -1,6 +1,7 @@
 package org.spauny.joy.dotmailer.api;
 
 import com.google.common.reflect.TypeToken;
+import org.joda.time.DateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +40,7 @@ public class CampaignResource extends AbstractResource {
      * @return
      */
     public Optional<List<CampaignInfo>> listWithActivitySince(Date startDate) {
-        return sendAndGetFullList(DefaultEndpoints.CAMPAIGNS.getPath(), new TypeToken<List<CampaignInfo>>() {});
+        return sendAndGetFullList(pathWithParam(DefaultEndpoints.CAMPAIGNS_WITH_ACTIVITY_SINCE.getPath(), new DateTime(startDate).toString(DM_DATE_FORMAT)), new TypeToken<List<CampaignInfo>>() {});
     }
     
     /**

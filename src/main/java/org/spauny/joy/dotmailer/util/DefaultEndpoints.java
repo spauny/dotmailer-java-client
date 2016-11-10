@@ -13,10 +13,11 @@ public enum DefaultEndpoints {
     ACCOUNT_INFO ("/account-info"),
     
     CAMPAIGNS ("/campaigns"),
+    CAMPAIGNS_WITH_ACTIVITY_SINCE("/campaigns/with-activity-since/%s"),
     CAMPAIGN_INFO ("/campaigns/%s"),
     CAMPAIGN_SUMMARY ("/campaigns/%s/summary"),
     CAMPAIGN_ACTIVITY ("/campaigns/%s/activities"),
-    
+
     ADDRESS_BOOKS ("/address-books"),
     ADDRESS_BOOK ("/address-books/%s"),
     ADDRESS_BOOK_CONTACTS ("/address-books/%s/contacts"),
