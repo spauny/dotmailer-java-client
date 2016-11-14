@@ -36,6 +36,11 @@ public class AddressBookResource extends AbstractResource {
         String path = pathWithId(DefaultEndpoints.ADDRESS_BOOK.getPath(), addressBookId);
         return sendAndGet(path, AddressBook.class);
     }
+
+    public Optional<AddressBook> create(AddressBook addressBook) {
+        String path = DefaultEndpoints.ADDRESS_BOOKS.getPath();
+        return postAndGet(path, addressBook);
+    }
     
     /**
      * List address book contacts. 
