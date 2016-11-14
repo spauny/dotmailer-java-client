@@ -142,7 +142,8 @@ public abstract class AbstractResource {
         int skip = -maxSelect + initialSkip;
         int newResultsSize = 0;
         List<T> allResults = new ArrayList<>(DEFAULT_MAX_SELECT);
-        this.recordsSynced = 0;
+        long recordsSynced = 0;
+        long lastResultSize = 0;
         do {
             try {
                 skip += maxSelect;
@@ -159,7 +160,11 @@ public abstract class AbstractResource {
                     }
                     allResults.addAll(newResults);
                     newResultsSize = newResults.size();
-                    this.recordsSynced += allResults.size();
+                    recordsSynced += allResults.size();
+
+                    if(newResults.size() < maxSelect){
+                        break;
+                    }
                 }
             } catch (Exception ex) {
                 log.error("sendAndGetFullList: error occured: {}", ex);
