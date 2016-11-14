@@ -194,5 +194,43 @@ public class AddressBookResource extends AbstractResource {
             skip += MAX_CONTACTS_TO_PROCESS_PER_STEP;
         } while (nrOfContacts > skip);
     }
-    
+
+
+    /**
+     * Bulk creates, or bulk updates, contacts.
+     * @param <T>
+     * @param customContactObjects
+     * @return
+     */
+    public <T> Optional<JobStatus> importList(Long addressBookId, List<T> customContactObjects) {
+        Optional<String> csvFilePath = CsvUtil.writeCsv(customContactObjects);
+        if (!csvFilePath.isPresent()) {
+            return Optional.empty();
+        }
+        return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.get(), JobStatus.class);
+    }
+
+    public <T> Optional<JobStatus> importList(Long addressBookId, List<T> customContactObjects, List<String> csvHeaders) {
+        Optional<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders);
+        if (!csvFilePath.isPresent()) {
+            return Optional.empty();
+        }
+        return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.get(), JobStatus.class);
+    }
+
+    public <T> Optional<JobStatus> importList(Long addressBookId, List<T> customContactObjects, List<String> csvHeaders, List<String> fieldNames) {
+        Optional<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders, fieldNames);
+        if (!csvFilePath.isPresent()) {
+            return Optional.empty();
+        }
+        return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.get(), JobStatus.class);
+    }
+
+    public <T> Optional<JobStatus> importList(Long addressBookId, List<T> customContactObjects, List<String> csvHeaders, List<String> fieldNames, CellProcessor[] cellProcessors) {
+        Optional<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders, fieldNames, cellProcessors);
+        if (!csvFilePath.isPresent()) {
+            return Optional.empty();
+        }
+        return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.get(), JobStatus.class);
+    }
 }
