@@ -22,6 +22,7 @@ public abstract class AbstractResource {
 
     protected static final String WITH_FULL_DATA_ATTR = "withFullData";
     protected static final String DM_DATE_FORMAT = "yyyy-MM-dd";
+    protected static final String DM_DATE_TIME_FORMAT = "yyyy-MM-dd%20HH:mm:ss";
 
     private static final String DM_SELECT_SKIP_ATTRIBUTES = "select=%s&skip=%s";
     private static final String AND = "&";

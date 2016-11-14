@@ -106,4 +106,14 @@ public class CampaignResource extends AbstractResource {
         return sendAndGetFullList(path, new TypeToken<List<CampaignContactActivity>>() {});
     }
     
+
+    public Optional<List<CampaignContactActivity>> activitiesSince(Long id, Date startDate, boolean roundToDate) {
+        String dateTemplate = roundToDate ? DM_DATE_FORMAT : DM_DATE_TIME_FORMAT;
+        String path = pathWithIdAndParam(DefaultEndpoints.CAMPAIGN_ACTIVITY_SINCE.getPath(), id, new DateTime(startDate).toString(dateTemplate));
+        return sendAndGetFullList(path, new TypeToken<List<CampaignContactActivity>>() {});
+    }
+
+    public Optional<List<CampaignContactActivity>> activitiesSince(Long id, Date startDate) {
+        return activitiesSince(id, startDate, true);
+    }
 }
