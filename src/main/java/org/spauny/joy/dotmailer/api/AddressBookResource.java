@@ -2,20 +2,19 @@ package org.spauny.joy.dotmailer.api;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonDeserializer;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.joda.time.DateTime;
-import static org.spauny.joy.dotmailer.api.AbstractResource.DM_DATE_FORMAT;
+import org.spauny.joy.dotmailer.util.CsvUtil;
 import org.spauny.joy.dotmailer.util.DefaultEndpoints;
 import org.spauny.joy.dotmailer.util.PersonalizedContactsProcessFunction;
-import org.spauny.joy.dotmailer.vo.api.AddressBook;
-import org.spauny.joy.dotmailer.vo.api.Contact;
-import org.spauny.joy.dotmailer.vo.api.PersonalisedContact;
-import org.spauny.joy.dotmailer.vo.api.SuppressedContact;
+import org.spauny.joy.dotmailer.vo.api.*;
 import org.spauny.joy.dotmailer.vo.internal.DMAccessCredentials;
+import org.supercsv.cellprocessor.ift.CellProcessor;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 /**
  *
