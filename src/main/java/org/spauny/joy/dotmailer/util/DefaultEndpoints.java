@@ -22,6 +22,7 @@ public enum DefaultEndpoints {
     ADDRESS_BOOKS ("/address-books"),
     ADDRESS_BOOK ("/address-books/%s"),
     ADDRESS_BOOK_CONTACTS ("/address-books/%s/contacts"),
+    ADDRESS_BOOK_CONTACTS_DELETE ("/address-books/%s/contacts/delete"),
     ADDRESS_BOOK_CONTACTS_IMPORT ("/address-books/%s/contacts/import"),
     ADDRESS_BOOK_CONTACTS_UNSUBSCRIBED_SINCE_DATE ("/address-books/%s/contacts/unsubscribed-since/%s"),
     

@@ -4,6 +4,7 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonDeserializer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.http.HttpStatus;
 import org.joda.time.DateTime;
 import org.spauny.joy.dotmailer.util.CsvUtil;
 import org.spauny.joy.dotmailer.util.DefaultEndpoints;
@@ -40,7 +41,13 @@ public class AddressBookResource extends AbstractResource {
         String path = DefaultEndpoints.ADDRESS_BOOKS.getPath();
         return postAndGet(path, addressBook);
     }
-    
+
+    public boolean deleteContacts(Long addressBookId, List<Long> contactIds) {
+        String path = pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_DELETE.getPath(), addressBookId);
+        return post(path, contactIds) == HttpStatus.SC_NO_CONTENT; // http 204 no content response
+    }
+
+
     /**
      * List address book contacts. 
      * DEFAULT ATTRS: No limit and without full data

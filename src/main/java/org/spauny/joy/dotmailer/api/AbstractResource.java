@@ -85,6 +85,21 @@ public abstract class AbstractResource {
         }
         return Optional.empty();
     }
+
+    protected <T> Optional<T> postAndGet(String resourcePath, Object objectToPost, Class<T> responseClass) {
+        WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
+        ResponseVO response = request.post(objectToPost);
+        if (validResponse(response)) {
+            return Optional.of(response.castJsonResponse(responseClass));
+        }
+        return Optional.empty();
+    }
+
+    protected int post(String resourcePath, Object objectToPost) {
+        WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
+        ResponseVO response = request.post(objectToPost);
+        return response.getStatusCode();
+    }
     
     protected <T> Optional<T> postFileAndGet(String resourcePath, String filePath, Class<T> responseClass) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
