@@ -42,6 +42,11 @@ public class CampaignResource extends AbstractResource {
     public Optional<List<CampaignInfo>> listWithActivitySince(Date startDate) {
         return sendAndGetFullList(pathWithParam(DefaultEndpoints.CAMPAIGNS_WITH_ACTIVITY_SINCE.getPath(), new DateTime(startDate).toString(DM_DATE_FORMAT)), new TypeToken<List<CampaignInfo>>() {});
     }
+
+    public Optional<List<CampaignInfo>> listWithActivitySince(Date startDate, boolean roundToDate) {
+        String dateTemplate = roundToDate ? DM_DATE_FORMAT : DM_DATE_TIME_FORMAT;
+        return sendAndGetFullList(pathWithParam(DefaultEndpoints.CAMPAIGNS_WITH_ACTIVITY_SINCE.getPath(), new DateTime(startDate).toString(dateTemplate)), new TypeToken<List<CampaignInfo>>() {});
+    }
     
     /**
      * Returns a list of Campaigns including html content, summary and all the activities. 

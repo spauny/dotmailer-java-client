@@ -89,7 +89,8 @@ public class ContactResource extends AbstractResource {
     public Optional<List<Contact>> list(Date createdSince, boolean withFullData) {
         return list(createdSince, withFullData, 0);
     }
-    
+
+
     /**
      * Gets a list of all contacts in the account created since the passed date
      * @param createdSince
@@ -98,7 +99,20 @@ public class ContactResource extends AbstractResource {
      * @return
      */
     public Optional<List<Contact>> list(Date createdSince, boolean withFullData, int limit) {
-        String rootPath = pathWithParam(DefaultEndpoints.CONTACTS_SINCE_DATE.getPath(), new DateTime(createdSince).toString(DM_DATE_FORMAT));
+        return list(createdSince, withFullData, limit, true);
+    }
+
+    /**
+     * Gets a list of all contacts in the account created since the passed date
+     * @param createdSince
+     * @param withFullData
+     * @param limit
+     * @param roundToDate
+     * @return
+     */
+    public Optional<List<Contact>> list(Date createdSince, boolean withFullData, int limit, boolean roundToDate) {
+        String dateTemplate = roundToDate ? DM_DATE_FORMAT : DM_DATE_TIME_FORMAT;
+        String rootPath = pathWithParam(DefaultEndpoints.CONTACTS_SINCE_DATE.getPath(), new DateTime(createdSince).toString(dateTemplate));
         String path = addAttrAndValueToPath(rootPath, WITH_FULL_DATA_ATTR, BooleanUtils.toStringTrueFalse(withFullData));
         
         if (limit > 0) {
@@ -164,7 +178,6 @@ public class ContactResource extends AbstractResource {
      * To be able to do this, you have to create a details class for your contact, a JsonDeserializer object where your build the object of the class mentioned before, a type token that wraps all this structure, used for type inference and provide a process function (callback method) that will be called for each personalized contact
      * Please check github repo's wiki for more info on how to use this amazing method!
      * DEFAULT ATTRS: This will automatically process contacts with full data and has no limit set.
-     * @param addressBookId
      * @param clazz
      * @param jsonDeserializer
      * @param typeToken
@@ -216,8 +229,6 @@ public class ContactResource extends AbstractResource {
      * Gets a list of unsubscribed contacts who unsubscribed after a given date
      * DEFAULT ATTRS: no limit
      * @param since
-     * @param withFullData
-     * @param limit
      * @return
      */
     public Optional<List<SuppressedContact>> listUnsubscribed(Date since) {
@@ -266,8 +277,34 @@ public class ContactResource extends AbstractResource {
      * @return
      */
     public Optional<List<SuppressedContact>> listSuppressed(Date since, int limit) {
-        String rootPath = pathWithParam(DefaultEndpoints.CONTACTS_SUPPRESSED_SINCE_DATE.getPath(), new DateTime(since).toString(DM_DATE_FORMAT));
-        
+        return listSuppressed(since, limit, true);
+    }
+
+
+    /**
+     * Gets a list of suppressed contacts after a given date along with the reason for suppression.
+     *
+     * The possible suppression reasons can be:
+     'Unsubscribed' - The contact is unsubscribed from your communications
+     'SoftBounced' - The contact’s address is temporarily unavailable, possibly because their mailbox is too full, or their mail server won’t accept a message of the size sent, or their server is having temporary issues accepting any mail
+     'HardBounced' - The contact’s address is permanently unreachable, most likely because they, or the server they were hosted on, does not exist
+     'IspComplained' - The contact has submitted a spam complaint to us via their internet service provider
+     'MailBlocked' - The mail server indicated that it didn’t want to receive the mail. No reason was given
+     'DirectComplaint' - The contact has complained directly to either us, a hosting facility or possibly even a blacklist about receiving your communications
+     'Suppressed' - The contact that has been actively suppressed by you in your account
+     'NotAllowed' - The contact's email address is fully blocked from our system
+     'DomainSuppression' - The contact’s email domain is on your domain suppression list
+     'NoMxRecord' - The contact’s email domain does not have an MX DNS record. A mail exchange record provides the address of the mail server for that domain.
+     *
+     * @param since
+     * @param limit
+     * @param roundToDate
+     * @return
+     */
+    public Optional<List<SuppressedContact>> listSuppressed(Date since, int limit, boolean roundToDate) {
+        String dateTemplate = roundToDate ? DM_DATE_FORMAT : DM_DATE_TIME_FORMAT;
+        String rootPath = pathWithParam(DefaultEndpoints.CONTACTS_SUPPRESSED_SINCE_DATE.getPath(), new DateTime(since).toString(dateTemplate));
+
         if (limit > 0) {
             int maxSelect = limit >= DEFAULT_MAX_SELECT ? DEFAULT_MAX_SELECT : limit;
             return sendAndGetFullList(rootPath, new TypeToken<List<SuppressedContact>>() {}, maxSelect, limit);
