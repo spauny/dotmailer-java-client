@@ -193,7 +193,7 @@ public class ContactResource extends AbstractResource {
         // unfortunately there is no way to get a count of account contacts. We'll have to process until we hit bottom :)
         log.info("STARTING TO PROCESS ALL CONTACTS");
         
-        String initialPath = addAttrAndValueToPath(DefaultEndpoints.CONTACTS.getPath(), WITH_FULL_DATA_ATTR, BooleanUtils.toString(withFullData, "true", "false"));
+        String initialPath = addAttrAndValueToPath(DefaultEndpoints.CONTACTS.getPath(), WITH_FULL_DATA_ATTR, BooleanUtils.toStringTrueFalse(withFullData));
         
         int maxSelect = limit <= 0 || limit >= DEFAULT_MAX_SELECT ? DEFAULT_MAX_SELECT : limit;
         
