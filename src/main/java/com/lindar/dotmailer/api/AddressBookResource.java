@@ -194,7 +194,7 @@ public class AddressBookResource extends AbstractResource {
         
         log.info("STARTING TO PROCESS A TOTAL OF {} CONTACTS", nrOfContacts);
         
-        String initialPath = addAttrAndValueToPath(DefaultEndpoints.ADDRESS_BOOK_CONTACTS.getPath(), WITH_FULL_DATA_ATTR, BooleanUtils.toString(withFullData, "true", "false"));
+        String initialPath = addAttrAndValueToPath(DefaultEndpoints.ADDRESS_BOOK_CONTACTS.getPath(), WITH_FULL_DATA_ATTR, BooleanUtils.toStringTrueFalse(withFullData));
         String path = pathWithId(initialPath, addressBookId);
         
         int maxSelect = limit <= 0 || limit >= DEFAULT_MAX_SELECT ? DEFAULT_MAX_SELECT : limit;
@@ -214,6 +214,7 @@ public class AddressBookResource extends AbstractResource {
     /**
      * Bulk creates, or bulk updates, contacts.
      * @param <T>
+     * @param addressBookId
      * @param customContactObjects
      * @return
      */
