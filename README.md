@@ -22,3 +22,13 @@ Optional<List<Contact>> addressBooks = Dotmailer.build(username, pass).addressBo
 ```
 
 Note: Almost all methods return an empty optional object when the account doesn't exist or dotmailer's API couldn't be contacted.
+
+Usage:
+
+```xml
+<dependency>
+    <groupId>com.lindar</groupId>
+    <artifactId>dotmailer-client</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
