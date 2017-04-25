@@ -45,6 +45,11 @@ public class AddressBookResource extends AbstractResource {
         String path = DefaultEndpoints.ADDRESS_BOOKS.getPath();
         return postAndGet(path, addressBook);
     }
+    
+    public Optional<Contact> addContact(Long addressBookId, Contact contact) {
+        String path = pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS.getPath(), addressBookId);
+        return postAndGet(path, contact);
+    }
 
     public boolean deleteContacts(Long addressBookId, List<Long> contactIds) {
         String path = pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_DELETE.getPath(), addressBookId);
