@@ -1,6 +1,6 @@
 # dotmailer-java-client
 
-Dotmailer API client written in Java.
+Dotmailer API client written in Java 8.
 
 Some Examples (more to come): 
 
