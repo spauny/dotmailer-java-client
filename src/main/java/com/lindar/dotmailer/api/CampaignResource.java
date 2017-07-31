@@ -1,22 +1,19 @@
 package com.lindar.dotmailer.api;
 
 import com.google.gson.reflect.TypeToken;
-import org.joda.time.DateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import com.lindar.dotmailer.util.DefaultEndpoints;
 import com.lindar.dotmailer.vo.api.Campaign;
 import com.lindar.dotmailer.vo.api.CampaignContactActivity;
 import com.lindar.dotmailer.vo.api.CampaignInfo;
 import com.lindar.dotmailer.vo.api.CampaignSummary;
 import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
+import org.joda.time.DateTime;
 
-/**
- *
- * @author iulian
- */
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 public class CampaignResource extends AbstractResource {
     
     public CampaignResource(DMAccessCredentials accessCredentials) {
@@ -82,17 +79,9 @@ public class CampaignResource extends AbstractResource {
             return Optional.empty();
         }
         Campaign campaign = new Campaign(info.get());
-        
-        Optional<CampaignSummary> summary = summary(id);
-        if (summary.isPresent()) {
-            campaign.setSummary(summary.get());
-        }
-        
-        Optional<List<CampaignContactActivity>> activities = activities(id);
-        if (activities.isPresent()) {
-            campaign.setActivities(activities.get());
-        }
-        
+        summary(id).ifPresent(campaign::setSummary);
+        activities(id).ifPresent(campaign::setActivities);
+
         return Optional.of(campaign);
     }
     

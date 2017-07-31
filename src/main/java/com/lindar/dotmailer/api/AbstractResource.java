@@ -2,21 +2,18 @@ package com.lindar.dotmailer.api;
 
 import com.google.gson.JsonDeserializer;
 import com.google.gson.reflect.TypeToken;
+import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
+import com.lindar.wellrested.WellRestedRequest;
+import com.lindar.wellrested.vo.ResponseVO;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
-import com.lindar.wellrested.WellRestedRequest;
-import com.lindar.wellrested.vo.ResponseVO;
 
-/**
- *
- * @author iulian
- */
 @Slf4j
 public abstract class AbstractResource {
 

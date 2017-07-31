@@ -2,13 +2,6 @@ package com.lindar.dotmailer.api;
 
 import com.google.gson.JsonDeserializer;
 import com.google.gson.reflect.TypeToken;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
-import org.joda.time.DateTime;
-import static com.lindar.dotmailer.api.AbstractResource.DEFAULT_MAX_SELECT;
 import com.lindar.dotmailer.util.CsvUtil;
 import com.lindar.dotmailer.util.DefaultEndpoints;
 import com.lindar.dotmailer.util.PersonalizedContactsProcessFunction;
@@ -19,12 +12,15 @@ import com.lindar.dotmailer.vo.api.JobStatus;
 import com.lindar.dotmailer.vo.api.PersonalisedContact;
 import com.lindar.dotmailer.vo.api.SuppressedContact;
 import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
+import org.joda.time.DateTime;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
-/**
- *
- * @author iulian
- */
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
 @Slf4j
 public class ContactResource extends AbstractResource {
     
@@ -215,9 +211,7 @@ public class ContactResource extends AbstractResource {
         Optional<List<PersonalisedContact<T>>> contacts;
         do {
             contacts = sendAndGetFullList(initialPath, clazz, jsonDeserializer, typeToken, maxSelect, MAX_CONTACTS_TO_PROCESS_PER_STEP, skip);
-            if (contacts.isPresent()) {
-                processFunction.accept(contacts.get());
-            }
+            contacts.ifPresent(processFunction);
             skip += MAX_CONTACTS_TO_PROCESS_PER_STEP;
         } while (contacts.isPresent() && !contacts.get().isEmpty());
     }

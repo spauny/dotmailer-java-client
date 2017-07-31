@@ -21,10 +21,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-/**
- *
- * @author iulian
- */
 @Slf4j
 public class AddressBookResource extends AbstractResource {
 
@@ -208,9 +204,7 @@ public class AddressBookResource extends AbstractResource {
         
         do {
             Optional<List<PersonalisedContact<T>>> contacts = sendAndGetFullList(path, clazz, jsonDeserializer, typeToken, maxSelect, MAX_CONTACTS_TO_PROCESS_PER_STEP, skip);
-            if (contacts.isPresent()) {
-                processFunction.accept(contacts.get());
-            }
+            contacts.ifPresent(processFunction);
             skip += MAX_CONTACTS_TO_PROCESS_PER_STEP;
         } while (nrOfContacts > skip);
     }
