@@ -4,7 +4,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.reflect.TypeToken;
 import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
 import com.lindar.wellrested.WellRestedRequest;
-import com.lindar.wellrested.vo.ResponseVO;
+import com.lindar.wellrested.vo.WellRestedResponse;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -27,7 +27,7 @@ public abstract class AbstractResource {
     private static final String EQUAL = "=";
     protected static final int DEFAULT_MAX_SELECT = 1000;
     protected static final int MAX_CONTACTS_TO_PROCESS_PER_STEP = 50000;
-    
+
     @Getter
     private long recordsSynced = 0l;
 
@@ -41,7 +41,7 @@ public abstract class AbstractResource {
     protected String dotmailerUrl() {
         return accessCredentials.getApiUrl() + accessCredentials.getVersion();
     }
-    
+
     protected WellRestedRequest buildRequestFromResourcePath(String resourcePath) {
         String url = validatePath(dotmailerUrl() + resourcePath);
         return WellRestedRequest.build(url, accessCredentials.getUsername(), accessCredentials.getPassword());
@@ -67,62 +67,62 @@ public abstract class AbstractResource {
 
     protected <T> Optional<T> sendAndGet(String resourcePath, Class<T> clazz) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
-        ResponseVO response = request.get();
+        WellRestedResponse response = request.get();
         if (validResponse(response)) {
-            return Optional.of(response.castJsonResponse(clazz));
+            return Optional.of(response.fromJson().castTo(clazz));
         }
         return Optional.empty();
     }
-    
+
     protected <T> Optional<T> postAndGet(String resourcePath, T objectToPost) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
-        ResponseVO response = request.post(objectToPost);
+        WellRestedResponse response = request.post(objectToPost);
         if (validResponse(response)) {
-            return Optional.of(response.castJsonResponse((Class<T>)objectToPost.getClass()));
+            return Optional.of(response.fromJson().castTo(((Class<T>) objectToPost.getClass())));
         }
         return Optional.empty();
     }
 
     protected <T> Optional<T> postAndGet(String resourcePath, Object objectToPost, Class<T> responseClass) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
-        ResponseVO response = request.post(objectToPost);
+        WellRestedResponse response = request.post(objectToPost);
         if (validResponse(response)) {
-            return Optional.of(response.castJsonResponse(responseClass));
+            return Optional.of(response.fromJson().castTo(responseClass));
         }
         return Optional.empty();
     }
 
     protected int post(String resourcePath, Object objectToPost) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
-        ResponseVO response = request.post(objectToPost);
+        WellRestedResponse response = request.post(objectToPost);
         return response.getStatusCode();
     }
-    
+
     protected <T> Optional<T> postFileAndGet(String resourcePath, String filePath, Class<T> responseClass) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
-        
+
         File postedFile = new File(filePath);
-        ResponseVO response = request.post(postedFile);
+        WellRestedResponse response = request.post(postedFile);
         postedFile.delete();
-        
+
         if (validResponse(response)) {
-            return Optional.of(response.castJsonResponse(responseClass));
+            return Optional.of(response.fromJson().castTo(responseClass));
         }
         return Optional.empty();
     }
-    
+
     protected <T> Optional<T> putAndGet(String resourcePath, T objectToPost) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
-        ResponseVO response = request.put(objectToPost);
+        WellRestedResponse response = request.put(objectToPost);
         if (validResponse(response)) {
-            return Optional.of(response.castJsonResponse((Class<T>)objectToPost.getClass()));
+            return Optional.of(response.fromJson().castTo((Class<T>) objectToPost.getClass()));
         }
         return Optional.empty();
     }
-    
+
     protected boolean delete(String resourcePath) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
-        ResponseVO response = request.delete();
+        WellRestedResponse response = request.delete();
         return validBlankResponse(response);
     }
 
@@ -163,19 +163,19 @@ public abstract class AbstractResource {
                 String url = baseUrl + String.format(DM_SELECT_SKIP_ATTRIBUTES, maxSelect, skip);
                 log.info(url);
                 WellRestedRequest request = WellRestedRequest.build(url, accessCredentials.getUsername(), accessCredentials.getPassword());
-                ResponseVO response = request.get();
+                WellRestedResponse response = request.get();
                 if (validResponse(response)) {
                     List<T> newResults;
                     if (clazz != null && jsonDeserializer != null) {
-                        newResults = response.castJsonResponseToList(clazz, jsonDeserializer, typeToken);
+                        newResults = response.fromJson().registerDeserializer(clazz, jsonDeserializer).castToList(typeToken);
                     } else {
-                        newResults = response.castJsonResponseToList(typeToken);
+                        newResults = response.fromJson().castToList(typeToken);
                     }
                     allResults.addAll(newResults);
                     newResultsSize = newResults.size();
                     recordsSynced += allResults.size();
 
-                    if(newResults.size() < maxSelect){
+                    if (newResults.size() < maxSelect) {
                         break;
                     }
                 }
@@ -189,9 +189,9 @@ public abstract class AbstractResource {
 
     protected <T> Optional<List<T>> sendAndGetSingleList(String resourcePath, TypeToken<List<T>> typeToken) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
-        ResponseVO response = request.get();
+        WellRestedResponse response = request.get();
         if (validResponse(response)) {
-            return Optional.of(response.castJsonResponseToList(typeToken));
+            return Optional.of(response.fromJson().castToList(typeToken));
         }
         return Optional.empty();
     }
@@ -203,7 +203,7 @@ public abstract class AbstractResource {
     protected String pathWithParam(String path, String param) {
         return String.format(path, param);
     }
-    
+
     protected String pathWithIdAndParam(String path, Long id, String param) {
         return String.format(path, id, param);
     }
@@ -213,11 +213,11 @@ public abstract class AbstractResource {
         return newPath + attrName + EQUAL + value;
     }
 
-    protected boolean validResponse(ResponseVO response) {
+    protected boolean validResponse(WellRestedResponse response) {
         return validBlankResponse(response) && StringUtils.isNotBlank(response.getServerResponse());
     }
 
-    protected boolean validBlankResponse(ResponseVO response) {
+    protected boolean validBlankResponse(WellRestedResponse response) {
         return response != null && (response.getStatusCode() == 200 || response.getStatusCode() == 201 || response.getStatusCode() == 202);
     }
 
