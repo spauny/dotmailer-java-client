@@ -6,7 +6,7 @@
 
     <groupId>com.lindar</groupId>
     <artifactId>dotmailer-client</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.3</version>
     
     <name>Dotmailer Client</name>
     <description>Dotmailer API client written in Java</description>
@@ -56,7 +56,7 @@
         <dependency>
             <groupId>com.lindar</groupId>
             <artifactId>well-rested-client</artifactId>
-            <version>1.0.1</version>
+            <version>1.2.0</version>
         </dependency>
         
         <dependency>
@@ -89,20 +89,6 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.6</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
