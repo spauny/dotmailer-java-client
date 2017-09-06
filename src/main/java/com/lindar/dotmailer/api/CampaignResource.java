@@ -7,11 +7,12 @@ import com.lindar.dotmailer.vo.api.CampaignContactActivity;
 import com.lindar.dotmailer.vo.api.CampaignInfo;
 import com.lindar.dotmailer.vo.api.CampaignSummary;
 import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
+import com.lindar.wellrested.vo.Result;
+import com.lindar.wellrested.vo.ResultFactory;
 import org.joda.time.DateTime;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class CampaignResource extends AbstractResource {
@@ -26,7 +27,7 @@ public class CampaignResource extends AbstractResource {
      * 
      * @return
      */
-    public Optional<List<CampaignInfo>> list() {
+    public Result<List<CampaignInfo>> list() {
         return sendAndGetFullList(DefaultEndpoints.CAMPAIGNS.getPath(), new TypeToken<List<CampaignInfo>>() {});
     }
     
@@ -36,11 +37,11 @@ public class CampaignResource extends AbstractResource {
      * 
      * @return
      */
-    public Optional<List<CampaignInfo>> listWithActivitySince(Date startDate) {
+    public Result<List<CampaignInfo>> listWithActivitySince(Date startDate) {
         return sendAndGetFullList(pathWithParam(DefaultEndpoints.CAMPAIGNS_WITH_ACTIVITY_SINCE.getPath(), new DateTime(startDate).toString(DM_DATE_FORMAT)), new TypeToken<List<CampaignInfo>>() {});
     }
 
-    public Optional<List<CampaignInfo>> listWithActivitySince(Date startDate, boolean roundToDate) {
+    public Result<List<CampaignInfo>> listWithActivitySince(Date startDate, boolean roundToDate) {
         String dateTemplate = roundToDate ? DM_DATE_FORMAT : DM_DATE_TIME_FORMAT;
         return sendAndGetFullList(pathWithParam(DefaultEndpoints.CAMPAIGNS_WITH_ACTIVITY_SINCE.getPath(), new DateTime(startDate).toString(dateTemplate)), new TypeToken<List<CampaignInfo>>() {});
     }
@@ -51,16 +52,16 @@ public class CampaignResource extends AbstractResource {
      * 
      * @return
      */
-    public Optional<List<Campaign>> listComprehensive() {
-        Optional<List<CampaignInfo>> campaigns = sendAndGetFullList(DefaultEndpoints.CAMPAIGNS.getPath(), new TypeToken<List<CampaignInfo>>() {});
-        if (!campaigns.isPresent() || campaigns.get().isEmpty()) {
-            return Optional.empty();
+    public Result<List<Campaign>> listComprehensive() {
+        Result<List<CampaignInfo>> campaigns = sendAndGetFullList(DefaultEndpoints.CAMPAIGNS.getPath(), new TypeToken<List<CampaignInfo>>() {});
+        if (!campaigns.isSuccessAndNotNull() || campaigns.getData().isEmpty()) {
+            return ResultFactory.copyWithoutData(campaigns);
         }
-        List<Campaign> comprehensiveCampaigns = campaigns.get().stream()
+        List<Campaign> comprehensiveCampaigns = campaigns.getData().stream()
                 .map(baseCampaign -> get(baseCampaign.getId()).orElse(new Campaign(baseCampaign)))
                 .collect(Collectors.toList());
         
-        return Optional.of(comprehensiveCampaigns);
+        return ResultFactory.successful(comprehensiveCampaigns);
     }
     
     /**
@@ -73,41 +74,41 @@ public class CampaignResource extends AbstractResource {
      * @param id
      * @return
      */
-    public Optional<Campaign> get(Long id) {
-        Optional<CampaignInfo> info = info(id);
-        if (!info.isPresent()) {
-            return Optional.empty();
+    public Result<Campaign> get(Long id) {
+        Result<CampaignInfo> info = info(id);
+        if (!info.isSuccessAndNotNull()) {
+            return ResultFactory.copyWithoutData(info);
         }
-        Campaign campaign = new Campaign(info.get());
-        summary(id).ifPresent(campaign::setSummary);
-        activities(id).ifPresent(campaign::setActivities);
+        Campaign campaign = new Campaign(info.getData());
+        summary(id).ifSuccessAndNotNull(campaign::setSummary);
+        activities(id).ifSuccessAndNotNull(campaign::setActivities);
 
-        return Optional.of(campaign);
+        return ResultFactory.successful(campaign);
     }
     
-    public Optional<CampaignInfo> info(Long id) {
+    public Result<CampaignInfo> info(Long id) {
         String path = pathWithId(DefaultEndpoints.CAMPAIGN_INFO.getPath(), id);
         return sendAndGet(path, CampaignInfo.class);
     }
     
-    public Optional<CampaignSummary> summary(Long id) {
+    public Result<CampaignSummary> summary(Long id) {
         String path = pathWithId(DefaultEndpoints.CAMPAIGN_SUMMARY.getPath(), id);
         return sendAndGet(path, CampaignSummary.class);
     }
     
-    public Optional<List<CampaignContactActivity>> activities(Long id) {
+    public Result<List<CampaignContactActivity>> activities(Long id) {
         String path = pathWithId(DefaultEndpoints.CAMPAIGN_ACTIVITY.getPath(), id);
         return sendAndGetFullList(path, new TypeToken<List<CampaignContactActivity>>() {});
     }
     
 
-    public Optional<List<CampaignContactActivity>> activitiesSince(Long id, Date startDate, boolean roundToDate) {
+    public Result<List<CampaignContactActivity>> activitiesSince(Long id, Date startDate, boolean roundToDate) {
         String dateTemplate = roundToDate ? DM_DATE_FORMAT : DM_DATE_TIME_FORMAT;
         String path = pathWithIdAndParam(DefaultEndpoints.CAMPAIGN_ACTIVITY_SINCE.getPath(), id, new DateTime(startDate).toString(dateTemplate));
         return sendAndGetFullList(path, new TypeToken<List<CampaignContactActivity>>() {});
     }
 
-    public Optional<List<CampaignContactActivity>> activitiesSince(Long id, Date startDate) {
+    public Result<List<CampaignContactActivity>> activitiesSince(Long id, Date startDate) {
         return activitiesSince(id, startDate, true);
     }
 }

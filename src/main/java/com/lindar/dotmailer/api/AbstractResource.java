@@ -2,8 +2,12 @@ package com.lindar.dotmailer.api;
 
 import com.google.gson.JsonDeserializer;
 import com.google.gson.reflect.TypeToken;
+import com.lindar.dotmailer.util.ErrorTranslator;
 import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
+import com.lindar.dotmailer.vo.internal.ErrorResponse;
 import com.lindar.wellrested.WellRestedRequest;
+import com.lindar.wellrested.vo.Result;
+import com.lindar.wellrested.vo.ResultFactory;
 import com.lindar.wellrested.vo.WellRestedResponse;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +20,9 @@ import java.util.Optional;
 
 @Slf4j
 public abstract class AbstractResource {
+    private static final String ERROR_INPUT = "ERROR_INPUT";
+    private static final String ERROR_UNKNOWN = "ERROR_UNKNOWN";
+
 
     protected static final String WITH_FULL_DATA_ATTR = "withFullData";
     protected static final String DM_DATE_FORMAT = "yyyy-MM-dd";
@@ -65,31 +72,31 @@ public abstract class AbstractResource {
         return newPath.replaceAll(AND + AND, AND);
     }
 
-    protected <T> Optional<T> sendAndGet(String resourcePath, Class<T> clazz) {
+    protected <T> Result<T> sendAndGet(String resourcePath, Class<T> clazz) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
         WellRestedResponse response = request.get();
         if (validResponse(response)) {
-            return Optional.of(response.fromJson().castTo(clazz));
+            return ResultFactory.successful(response.fromJson().castTo(clazz));
         }
-        return Optional.empty();
+        return parseErrorResponse(response);
     }
 
-    protected <T> Optional<T> postAndGet(String resourcePath, T objectToPost) {
+    protected <T> Result<T> postAndGet(String resourcePath, T objectToPost) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
         WellRestedResponse response = request.post(objectToPost);
         if (validResponse(response)) {
-            return Optional.of(response.fromJson().castTo(((Class<T>) objectToPost.getClass())));
+            return ResultFactory.successful(response.fromJson().castTo(((Class<T>) objectToPost.getClass())));
         }
-        return Optional.empty();
+        return parseErrorResponse(response);
     }
 
-    protected <T> Optional<T> postAndGet(String resourcePath, Object objectToPost, Class<T> responseClass) {
+    protected <T> Result<T> postAndGet(String resourcePath, Object objectToPost, Class<T> responseClass) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
         WellRestedResponse response = request.post(objectToPost);
         if (validResponse(response)) {
-            return Optional.of(response.fromJson().castTo(responseClass));
+            return ResultFactory.successful(response.fromJson().castTo(responseClass));
         }
-        return Optional.empty();
+        return parseErrorResponse(response);
     }
 
     protected int post(String resourcePath, Object objectToPost) {
@@ -98,7 +105,7 @@ public abstract class AbstractResource {
         return response.getStatusCode();
     }
 
-    protected <T> Optional<T> postFileAndGet(String resourcePath, String filePath, Class<T> responseClass) {
+    protected <T> Result<T> postFileAndGet(String resourcePath, String filePath, Class<T> responseClass) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
 
         File postedFile = new File(filePath);
@@ -106,62 +113,62 @@ public abstract class AbstractResource {
         postedFile.delete();
 
         if (validResponse(response)) {
-            return Optional.of(response.fromJson().castTo(responseClass));
+            return ResultFactory.successful(response.fromJson().castTo(responseClass));
         }
-        return Optional.empty();
+        return parseErrorResponse(response);
     }
 
-    protected <T> Optional<T> putAndGet(String resourcePath, T objectToPost) {
+    protected <T> Result<T> putAndGet(String resourcePath, T objectToPost) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
         WellRestedResponse response = request.put(objectToPost);
         if (validResponse(response)) {
-            return Optional.of(response.fromJson().castTo((Class<T>) objectToPost.getClass()));
+            return ResultFactory.successful(response.fromJson().castTo((Class<T>) objectToPost.getClass()));
         }
-        return Optional.empty();
+        return parseErrorResponse(response);
     }
 
-    protected boolean delete(String resourcePath) {
+    protected Result delete(String resourcePath) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
         WellRestedResponse response = request.delete();
-        return validBlankResponse(response);
+        if(validBlankResponse(response)){
+            return ResultFactory.successful(true);
+        }
+        return parseErrorResponse(response);
     }
 
-    protected <T> Optional<List<T>> sendAndGetFullList(String resourcePath, TypeToken<List<T>> typeToken) {
+    protected <T> Result<List<T>> sendAndGetFullList(String resourcePath, TypeToken<List<T>> typeToken) {
         return sendAndGetFullList(resourcePath, null, null, typeToken, DEFAULT_MAX_SELECT, 0);
     }
 
-    protected <T> Optional<List<T>> sendAndGetFullList(String resourcePath, TypeToken<List<T>> typeToken, int maxSelect) {
+    protected <T> Result<List<T>> sendAndGetFullList(String resourcePath, TypeToken<List<T>> typeToken, int maxSelect) {
         return sendAndGetFullList(resourcePath, null, null, typeToken, maxSelect, 0);
     }
 
-    protected <T> Optional<List<T>> sendAndGetFullList(String resourcePath, TypeToken<List<T>> typeToken, int maxSelect, int limit) {
+    protected <T> Result<List<T>> sendAndGetFullList(String resourcePath, TypeToken<List<T>> typeToken, int maxSelect, int limit) {
         return sendAndGetFullList(resourcePath, null, null, typeToken, maxSelect, limit);
     }
 
-    protected <T, K> Optional<List<T>> sendAndGetFullList(String resourcePath, Class<K> clazz, JsonDeserializer<K> jsonDeserializer, TypeToken<List<T>> typeToken,
+    protected <T, K> Result<List<T>> sendAndGetFullList(String resourcePath, Class<K> clazz, JsonDeserializer<K> jsonDeserializer, TypeToken<List<T>> typeToken,
             int maxSelect, int limit) {
         return sendAndGetFullList(resourcePath, clazz, jsonDeserializer, typeToken, maxSelect, limit, 0);
     }
 
-    protected <T, K> Optional<List<T>> sendAndGetFullList(String resourcePath, Class<K> clazz, JsonDeserializer<K> jsonDeserializer, TypeToken<List<T>> typeToken,
+    protected <T, K> Result<List<T>> sendAndGetFullList(String resourcePath, Class<K> clazz, JsonDeserializer<K> jsonDeserializer, TypeToken<List<T>> typeToken,
             int maxSelect, int limit, int initialSkip) {
 
         if (resourcePath.contains("select") && resourcePath.contains("skip")) {
-            log.error("Please remove select and skip attributes from the URL if you want to select the full list. Otherwise try the single list method");
-            return Optional.empty();
+            return ResultFactory.failed("Please remove select and skip attributes from the URL if you want to select the full list. Otherwise try the single list method", ERROR_INPUT);
         }
         String baseUrl = validatePathWithAttributes(dotmailerUrl() + resourcePath);
 
         int skip = -maxSelect + initialSkip;
         int newResultsSize = 0;
         List<T> allResults = new ArrayList<>(DEFAULT_MAX_SELECT);
-        long recordsSynced = 0;
-        long lastResultSize = 0;
         do {
             try {
                 skip += maxSelect;
                 String url = baseUrl + String.format(DM_SELECT_SKIP_ATTRIBUTES, maxSelect, skip);
-                log.info(url);
+                log.trace("GeneratedUrl: {}", url);
                 WellRestedRequest request = WellRestedRequest.build(url, accessCredentials.getUsername(), accessCredentials.getPassword());
                 WellRestedResponse response = request.get();
                 if (validResponse(response)) {
@@ -173,27 +180,28 @@ public abstract class AbstractResource {
                     }
                     allResults.addAll(newResults);
                     newResultsSize = newResults.size();
-                    recordsSynced += allResults.size();
 
                     if (newResults.size() < maxSelect) {
                         break;
                     }
+                } else {
+                    return ResultFactory.copyAndOverrideData(parseErrorResponse(response), allResults);
                 }
             } catch (Exception ex) {
                 log.error("sendAndGetFullList: error occured: {}", ex);
-                newResultsSize = 0;
+                return ResultFactory.failed(ex.getMessage(), ERROR_UNKNOWN);
             }
         } while (newResultsSize != 0 && (limit <= 0 || allResults.size() < limit));
-        return Optional.of(allResults);
+        return ResultFactory.successful(allResults);
     }
 
-    protected <T> Optional<List<T>> sendAndGetSingleList(String resourcePath, TypeToken<List<T>> typeToken) {
+    protected <T> Result<List<T>> sendAndGetSingleList(String resourcePath, TypeToken<List<T>> typeToken) {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
         WellRestedResponse response = request.get();
         if (validResponse(response)) {
-            return Optional.of(response.fromJson().castToList(typeToken));
+            return ResultFactory.successful(response.fromJson().castToList(typeToken));
         }
-        return Optional.empty();
+        return parseErrorResponse(response);
     }
 
     protected String pathWithId(String path, Long id) {
@@ -219,6 +227,22 @@ public abstract class AbstractResource {
 
     protected boolean validBlankResponse(WellRestedResponse response) {
         return response != null && (response.getStatusCode() == 200 || response.getStatusCode() == 201 || response.getStatusCode() == 202);
+    }
+
+    protected Result parseErrorResponse(WellRestedResponse response){
+        ErrorResponse errorResponse = response.fromJson().castTo(ErrorResponse.class);
+        if(errorResponse == null || errorResponse.getMessage() == null || StringUtils.isBlank(errorResponse.getMessage())){
+            return ResultFactory.failed("Unknown Error", "UNKNOWN_ERROR");
+        }
+
+        String errorCode = "UNKNOWN_ERROR";
+        String errorMessage = errorResponse.getMessage();
+        if(errorResponse.getMessage().startsWith("Error: ")){
+            errorCode = errorMessage.substring(7);
+            errorMessage = ErrorTranslator.getInstance().translate(errorCode);
+        }
+
+        return ResultFactory.failed(errorMessage, errorCode);
     }
 
 }

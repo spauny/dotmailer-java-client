@@ -12,6 +12,8 @@ import com.lindar.dotmailer.vo.api.JobStatus;
 import com.lindar.dotmailer.vo.api.PersonalisedContact;
 import com.lindar.dotmailer.vo.api.SuppressedContact;
 import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
+import com.lindar.wellrested.vo.Result;
+import com.lindar.wellrested.vo.ResultFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.joda.time.DateTime;
@@ -28,11 +30,11 @@ public class ContactResource extends AbstractResource {
         super(accessCredentials);
     }
     
-    public Optional<Contact> get(Long id) {
+    public Result<Contact> get(Long id) {
         return sendAndGet(pathWithId(DefaultEndpoints.CONTACT.getPath(), id), Contact.class);
     }
     
-    public Optional<Contact> get(String email) {
+    public Result<Contact> get(String email) {
         return sendAndGet(pathWithParam(DefaultEndpoints.CONTACT.getPath(), email), Contact.class);
     }
     
@@ -41,7 +43,7 @@ public class ContactResource extends AbstractResource {
      * DEFAULT ATTR: No limit set and without full data
      * @return
      */
-    public Optional<List<Contact>> list() {
+    public Result<List<Contact>> list() {
         return list(false, 0);
     }
     
@@ -51,11 +53,11 @@ public class ContactResource extends AbstractResource {
      * @param withFullData
      * @return
      */
-    public Optional<List<Contact>> list(boolean withFullData) {
+    public Result<List<Contact>> list(boolean withFullData) {
         return list(withFullData, 0);
     }
     
-    public Optional<List<Contact>> list(boolean withFullData, int limit) {
+    public Result<List<Contact>> list(boolean withFullData, int limit) {
         String initialPath = addAttrAndValueToPath(DefaultEndpoints.CONTACTS.getPath(), WITH_FULL_DATA_ATTR, BooleanUtils.toStringTrueFalse(withFullData));
         
         if (limit > 0) {
@@ -71,7 +73,7 @@ public class ContactResource extends AbstractResource {
      * @param createdSince
      * @return
      */
-    public Optional<List<Contact>> list(Date createdSince) {
+    public Result<List<Contact>> list(Date createdSince) {
         return list(createdSince, false, 0);
     }
     
@@ -82,7 +84,7 @@ public class ContactResource extends AbstractResource {
      * @param withFullData
      * @return
      */
-    public Optional<List<Contact>> list(Date createdSince, boolean withFullData) {
+    public Result<List<Contact>> list(Date createdSince, boolean withFullData) {
         return list(createdSince, withFullData, 0);
     }
 
@@ -94,7 +96,7 @@ public class ContactResource extends AbstractResource {
      * @param limit
      * @return
      */
-    public Optional<List<Contact>> list(Date createdSince, boolean withFullData, int limit) {
+    public Result<List<Contact>> list(Date createdSince, boolean withFullData, int limit) {
         return list(createdSince, withFullData, limit, true);
     }
 
@@ -106,7 +108,7 @@ public class ContactResource extends AbstractResource {
      * @param roundToDate
      * @return
      */
-    public Optional<List<Contact>> list(Date createdSince, boolean withFullData, int limit, boolean roundToDate) {
+    public Result<List<Contact>> list(Date createdSince, boolean withFullData, int limit, boolean roundToDate) {
         String dateTemplate = roundToDate ? DM_DATE_FORMAT : DM_DATE_TIME_FORMAT;
         String rootPath = pathWithParam(DefaultEndpoints.CONTACTS_SINCE_DATE.getPath(), new DateTime(createdSince).toString(dateTemplate));
         String path = addAttrAndValueToPath(rootPath, WITH_FULL_DATA_ATTR, BooleanUtils.toStringTrueFalse(withFullData));
@@ -130,7 +132,7 @@ public class ContactResource extends AbstractResource {
      * @param limit
      * @return
      */
-    public <T> Optional<List<PersonalisedContact<T>>> listPersonalizedContacts(Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken, 
+    public <T> Result<List<PersonalisedContact<T>>> listPersonalizedContacts(Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken,
             Boolean withFullData, int limit) {
         
         String initialPath = addAttrAndValueToPath(DefaultEndpoints.CONTACTS.getPath(), WITH_FULL_DATA_ATTR, BooleanUtils.toString(withFullData, "true", "false", "false"));
@@ -150,7 +152,7 @@ public class ContactResource extends AbstractResource {
      * @param withFullData
      * @return
      */
-    public <T> Optional<List<PersonalisedContact<T>>> listPersonalizedContacts(Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken, Boolean withFullData) {
+    public <T> Result<List<PersonalisedContact<T>>> listPersonalizedContacts(Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken, Boolean withFullData) {
         return listPersonalizedContacts(clazz, jsonDeserializer, typeToken, withFullData, 0);
     }
     
@@ -164,7 +166,7 @@ public class ContactResource extends AbstractResource {
      * @param typeToken
      * @return
      */
-    public <T> Optional<List<PersonalisedContact<T>>> listPersonalizedContacts(Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken) {
+    public <T> Result<List<PersonalisedContact<T>>> listPersonalizedContacts(Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken) {
         return listPersonalizedContacts(clazz, jsonDeserializer, typeToken, true, 0);
     }
     
@@ -207,13 +209,13 @@ public class ContactResource extends AbstractResource {
         int maxSelect = limit <= 0 || limit >= DEFAULT_MAX_SELECT ? DEFAULT_MAX_SELECT : limit;
         
         int skip = 0;
-        
-        Optional<List<PersonalisedContact<T>>> contacts;
+
+        Result<List<PersonalisedContact<T>>> contacts;
         do {
             contacts = sendAndGetFullList(initialPath, clazz, jsonDeserializer, typeToken, maxSelect, MAX_CONTACTS_TO_PROCESS_PER_STEP, skip);
-            contacts.ifPresent(processFunction);
+            contacts.ifSuccessAndNotNull(processFunction);
             skip += MAX_CONTACTS_TO_PROCESS_PER_STEP;
-        } while (contacts.isPresent() && !contacts.get().isEmpty());
+        } while (contacts.isSuccessAndNotNull() && !contacts.getData().isEmpty());
     }
     
     
@@ -225,7 +227,7 @@ public class ContactResource extends AbstractResource {
      * @param since
      * @return
      */
-    public Optional<List<SuppressedContact>> listUnsubscribed(Date since) {
+    public Result<List<SuppressedContact>> listUnsubscribed(Date since) {
         return listUnsubscribed(since, 0);
     }
     
@@ -235,7 +237,7 @@ public class ContactResource extends AbstractResource {
      * @param limit
      * @return
      */
-    public Optional<List<SuppressedContact>> listUnsubscribed(Date since, int limit) {
+    public Result<List<SuppressedContact>> listUnsubscribed(Date since, int limit) {
         String rootPath = pathWithParam(DefaultEndpoints.CONTACTS_UNSUBSCRIBED_SINCE_DATE.getPath(), new DateTime(since).toString(DM_DATE_FORMAT));
         
         if (limit > 0) {
@@ -246,7 +248,7 @@ public class ContactResource extends AbstractResource {
     }
     
     
-    public Optional<List<SuppressedContact>> listSuppressed(Date since) {
+    public Result<List<SuppressedContact>> listSuppressed(Date since) {
         return listSuppressed(since, 0);
     }
     
@@ -270,7 +272,7 @@ public class ContactResource extends AbstractResource {
      * @param limit
      * @return
      */
-    public Optional<List<SuppressedContact>> listSuppressed(Date since, int limit) {
+    public Result<List<SuppressedContact>> listSuppressed(Date since, int limit) {
         return listSuppressed(since, limit, true);
     }
 
@@ -295,7 +297,7 @@ public class ContactResource extends AbstractResource {
      * @param roundToDate
      * @return
      */
-    public Optional<List<SuppressedContact>> listSuppressed(Date since, int limit, boolean roundToDate) {
+    public Result<List<SuppressedContact>> listSuppressed(Date since, int limit, boolean roundToDate) {
         String dateTemplate = roundToDate ? DM_DATE_FORMAT : DM_DATE_TIME_FORMAT;
         String rootPath = pathWithParam(DefaultEndpoints.CONTACTS_SUPPRESSED_SINCE_DATE.getPath(), new DateTime(since).toString(dateTemplate));
 
@@ -312,7 +314,7 @@ public class ContactResource extends AbstractResource {
      * @param contactId
      * @return
      */
-    public Optional<List<AddressBook>> listAddressBooks(Long contactId) {
+    public Result<List<AddressBook>> listAddressBooks(Long contactId) {
         return listAddressBooks(contactId, 0);
     }
     
@@ -322,7 +324,7 @@ public class ContactResource extends AbstractResource {
      * @param limit
      * @return
      */
-    public Optional<List<AddressBook>> listAddressBooks(Long contactId, int limit) {
+    public Result<List<AddressBook>> listAddressBooks(Long contactId, int limit) {
         String path = pathWithId(DefaultEndpoints.CONTACT_ADDRESS_BOOKS.getPath(), contactId);
         
         if (limit > 0) {
@@ -333,15 +335,15 @@ public class ContactResource extends AbstractResource {
     }
     
     
-    public Optional<Contact> create(Contact newContact) {
+    public Result<Contact> create(Contact newContact) {
         return postAndGet(DefaultEndpoints.CONTACTS.getPath(), newContact);
     }
     
-    public Optional<Contact> update(Contact updatedContact) {
+    public Result<Contact> update(Contact updatedContact) {
         return putAndGet(DefaultEndpoints.CONTACTS.getPath(), updatedContact);
     }
     
-    public boolean delete(Long contactId) {
+    public Result delete(Long contactId) {
         return delete(pathWithId(DefaultEndpoints.CONTACT.getPath(), contactId));
     }
     
@@ -351,43 +353,43 @@ public class ContactResource extends AbstractResource {
      * @param customContactObjects
      * @return
      */
-    public <T> Optional<JobStatus> importList(List<T> customContactObjects) {
-        Optional<String> csvFilePath = CsvUtil.writeCsv(customContactObjects);
-        if (!csvFilePath.isPresent()) {
-            return Optional.empty();
+    public <T> Result<JobStatus> importList(List<T> customContactObjects) {
+        Result<String> csvFilePath = CsvUtil.writeCsv(customContactObjects);
+        if (!csvFilePath.isSuccessAndNotNull()) {
+            return ResultFactory.copyWithoutData(csvFilePath);
         }
-        return postFileAndGet(DefaultEndpoints.CONTACTS_IMPORT.getPath(), csvFilePath.get(), JobStatus.class);
+        return postFileAndGet(DefaultEndpoints.CONTACTS_IMPORT.getPath(), csvFilePath.getData(), JobStatus.class);
     }
     
-    public <T> Optional<JobStatus> importList(List<T> customContactObjects, List<String> csvHeaders) {
-        Optional<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders);
-        if (!csvFilePath.isPresent()) {
-            return Optional.empty();
+    public <T> Result<JobStatus> importList(List<T> customContactObjects, List<String> csvHeaders) {
+        Result<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders);
+        if (!csvFilePath.isSuccessAndNotNull()) {
+            return ResultFactory.copyWithoutData(csvFilePath);
         }
-        return postFileAndGet(DefaultEndpoints.CONTACTS_IMPORT.getPath(), csvFilePath.get(), JobStatus.class);
+        return postFileAndGet(DefaultEndpoints.CONTACTS_IMPORT.getPath(), csvFilePath.getData(), JobStatus.class);
     }
     
-    public <T> Optional<JobStatus> importList(List<T> customContactObjects, List<String> csvHeaders, List<String> fieldNames) {
-        Optional<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders, fieldNames);
-        if (!csvFilePath.isPresent()) {
-            return Optional.empty();
+    public <T> Result<JobStatus> importList(List<T> customContactObjects, List<String> csvHeaders, List<String> fieldNames) {
+        Result<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders, fieldNames);
+        if (!csvFilePath.isSuccessAndNotNull()) {
+            return ResultFactory.copyWithoutData(csvFilePath);
         }
-        return postFileAndGet(DefaultEndpoints.CONTACTS_IMPORT.getPath(), csvFilePath.get(), JobStatus.class);
+        return postFileAndGet(DefaultEndpoints.CONTACTS_IMPORT.getPath(), csvFilePath.getData(), JobStatus.class);
     }
     
-    public <T> Optional<JobStatus> importList(List<T> customContactObjects, List<String> csvHeaders, List<String> fieldNames, CellProcessor[] cellProcessors) {
-        Optional<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders, fieldNames, cellProcessors);
-        if (!csvFilePath.isPresent()) {
-            return Optional.empty();
+    public <T> Result<JobStatus> importList(List<T> customContactObjects, List<String> csvHeaders, List<String> fieldNames, CellProcessor[] cellProcessors) {
+        Result<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders, fieldNames, cellProcessors);
+        if (!csvFilePath.isSuccessAndNotNull()) {
+            return ResultFactory.copyWithoutData(csvFilePath);
         }
-        return postFileAndGet(DefaultEndpoints.CONTACTS_IMPORT.getPath(), csvFilePath.get(), JobStatus.class);
+        return postFileAndGet(DefaultEndpoints.CONTACTS_IMPORT.getPath(), csvFilePath.getData(), JobStatus.class);
     }
     
-    public Optional<JobStatus> getImportStatus(String guid) {
+    public Result<JobStatus> getImportStatus(String guid) {
         return sendAndGet(pathWithParam(DefaultEndpoints.CONTACTS_IMPORT_STATUS.getPath(), guid), JobStatus.class);
     }
     
-    public Optional<JobReport> getImportReport(String guid) {
+    public Result<JobReport> getImportReport(String guid) {
         return sendAndGet(pathWithParam(DefaultEndpoints.CONTACTS_IMPORT_REPORT.getPath(), guid), JobReport.class);
     }
 }
