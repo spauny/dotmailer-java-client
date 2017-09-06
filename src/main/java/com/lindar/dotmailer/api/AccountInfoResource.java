@@ -5,7 +5,6 @@ import com.lindar.dotmailer.vo.api.AccountInfo;
 import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
 import com.lindar.wellrested.vo.Result;
 
-import java.util.Optional;
 
 public class AccountInfoResource extends AbstractResource {
     

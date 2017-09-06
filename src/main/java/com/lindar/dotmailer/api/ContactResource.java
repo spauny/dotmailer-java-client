@@ -21,7 +21,6 @@ import org.supercsv.cellprocessor.ift.CellProcessor;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 public class ContactResource extends AbstractResource {
