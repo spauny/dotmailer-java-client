@@ -79,6 +79,8 @@ public abstract class AbstractResource {
         WellRestedResponse response = request.post(objectToPost);
         if (validResponse(response)) {
             return Optional.of(response.fromJson().castTo(((Class<T>) objectToPost.getClass())));
+        }else{
+            log.error("Dotmailer Error: {} ", request.get().getServerResponse());
         }
         return Optional.empty();
     }
