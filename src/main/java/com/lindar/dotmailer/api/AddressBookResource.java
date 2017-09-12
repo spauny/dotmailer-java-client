@@ -7,6 +7,8 @@ import com.lindar.dotmailer.vo.api.SuppressedContact;
 import com.lindar.dotmailer.vo.api.Contact;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.reflect.TypeToken;
+import com.lindar.wellrested.vo.Result;
+import com.lindar.wellrested.vo.ResultFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.http.HttpStatus;
@@ -19,7 +21,6 @@ import org.supercsv.cellprocessor.ift.CellProcessor;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 public class AddressBookResource extends AbstractResource {
@@ -28,21 +29,21 @@ public class AddressBookResource extends AbstractResource {
         super(accessCredentials);
     }
 
-    public Optional<List<AddressBook>> list() {
+    public Result<List<AddressBook>> list() {
         return sendAndGetFullList(DefaultEndpoints.ADDRESS_BOOKS.getPath(), new TypeToken<List<AddressBook>>() {});
     }
 
-    public Optional<AddressBook> get(Long addressBookId) {
+    public Result<AddressBook> get(Long addressBookId) {
         String path = pathWithId(DefaultEndpoints.ADDRESS_BOOK.getPath(), addressBookId);
         return sendAndGet(path, AddressBook.class);
     }
 
-    public Optional<AddressBook> create(AddressBook addressBook) {
+    public Result<AddressBook> create(AddressBook addressBook) {
         String path = DefaultEndpoints.ADDRESS_BOOKS.getPath();
         return postAndGet(path, addressBook);
     }
 
-    public Optional<Contact> addContact(Long addressBookId, Contact contact) {
+    public Result<Contact> addContact(Long addressBookId, Contact contact) {
         String path = pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS.getPath(), addressBookId);
         return postAndGet(path, contact);
     }
@@ -58,15 +59,15 @@ public class AddressBookResource extends AbstractResource {
      * @param addressBookId
      * @return
      */
-    public Optional<List<Contact>> listContacts(Long addressBookId) {
+    public Result<List<Contact>> listContacts(Long addressBookId) {
         return listContacts(addressBookId, false, 0);
     }
 
-    public Optional<List<Contact>> listContacts(Long addressBookId, Boolean withFullData) {
+    public Result<List<Contact>> listContacts(Long addressBookId, Boolean withFullData) {
         return listContacts(addressBookId, withFullData, 0);
     }
 
-    public Optional<List<Contact>> listContacts(Long addressBookId, Boolean withFullData, int limit) {
+    public Result<List<Contact>> listContacts(Long addressBookId, Boolean withFullData, int limit) {
         String initialPath = addAttrAndValueToPath(DefaultEndpoints.ADDRESS_BOOK_CONTACTS.getPath(), WITH_FULL_DATA_ATTR, BooleanUtils.toString(withFullData, "true", "false", "false"));
         String path = pathWithId(initialPath, addressBookId);
 
@@ -86,7 +87,7 @@ public class AddressBookResource extends AbstractResource {
      * @param since
      * @return
      */
-    public Optional<List<SuppressedContact>> listUnsubscribedContacts(Long addressBookId, Date since) {
+    public Result<List<SuppressedContact>> listUnsubscribedContacts(Long addressBookId, Date since) {
         return listUnsubscribedContacts(addressBookId, since, 0);
     }
 
@@ -98,7 +99,7 @@ public class AddressBookResource extends AbstractResource {
      * @param limit
      * @return
      */
-    public Optional<List<SuppressedContact>> listUnsubscribedContacts(Long addressBookId, Date since, int limit) {
+    public Result<List<SuppressedContact>> listUnsubscribedContacts(Long addressBookId, Date since, int limit) {
         String path = pathWithIdAndParam(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_UNSUBSCRIBED_SINCE_DATE.getPath(), addressBookId, new DateTime(since).toString(DM_DATE_FORMAT));
 
         if (limit > 0) {
@@ -124,7 +125,7 @@ public class AddressBookResource extends AbstractResource {
      * @param limit
      * @return
      */
-    public <T> Optional<List<PersonalisedContact<T>>> listPersonalizedContacts(Long addressBookId, Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken,
+    public <T> Result<List<PersonalisedContact<T>>> listPersonalizedContacts(Long addressBookId, Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken,
             Boolean withFullData, int limit) {
 
         String initialPath = addAttrAndValueToPath(DefaultEndpoints.ADDRESS_BOOK_CONTACTS.getPath(), WITH_FULL_DATA_ATTR, BooleanUtils.toString(withFullData, "true", "false", "false"));
@@ -148,7 +149,7 @@ public class AddressBookResource extends AbstractResource {
      * @param withFullData
      * @return
      */
-    public <T> Optional<List<PersonalisedContact<T>>> listPersonalizedContacts(Long addressBookId, Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken, Boolean withFullData) {
+    public <T> Result<List<PersonalisedContact<T>>> listPersonalizedContacts(Long addressBookId, Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken, Boolean withFullData) {
         return listPersonalizedContacts(addressBookId, clazz, jsonDeserializer, typeToken, withFullData, 0);
     }
 
@@ -166,7 +167,7 @@ public class AddressBookResource extends AbstractResource {
      * @param typeToken
      * @return
      */
-    public <T> Optional<List<PersonalisedContact<T>>> listPersonalizedContacts(Long addressBookId, Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken) {
+    public <T> Result<List<PersonalisedContact<T>>> listPersonalizedContacts(Long addressBookId, Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken) {
         return listPersonalizedContacts(addressBookId, clazz, jsonDeserializer, typeToken, true, 0);
     }
 
@@ -206,9 +207,15 @@ public class AddressBookResource extends AbstractResource {
      * @param processFunction
      * @return
      */
-    public <T> void processFullList(Long addressBookId, Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken, boolean withFullData, int limit,
+    public <T> Result processFullList(Long addressBookId, Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<PersonalisedContact<T>>> typeToken, boolean withFullData, int limit,
             PersonalizedContactsProcessFunction<T> processFunction) {
-        AddressBook addressBook = get(addressBookId).orElseThrow(() -> new IllegalArgumentException("Address book doesn't exist!"));
+
+        Result<AddressBook> addressBookResult = get(addressBookId);
+        if(!addressBookResult.isSuccessAndNotNull()){
+            return ResultFactory.copyWithoutData(addressBookResult);
+        }
+
+        AddressBook addressBook = addressBookResult.getData();
         int nrOfContacts = addressBook.getContacts();
 
         log.info("STARTING TO PROCESS A TOTAL OF {} CONTACTS", nrOfContacts);
@@ -221,10 +228,12 @@ public class AddressBookResource extends AbstractResource {
         int skip = 0;
 
         do {
-            Optional<List<PersonalisedContact<T>>> contacts = sendAndGetFullList(path, clazz, jsonDeserializer, typeToken, maxSelect, MAX_CONTACTS_TO_PROCESS_PER_STEP, skip);
-            contacts.ifPresent(processFunction);
+            Result<List<PersonalisedContact<T>>> contacts = sendAndGetFullList(path, clazz, jsonDeserializer, typeToken, maxSelect, MAX_CONTACTS_TO_PROCESS_PER_STEP, skip);
+            contacts.ifSuccessAndNotNull(processFunction);
             skip += MAX_CONTACTS_TO_PROCESS_PER_STEP;
         } while (nrOfContacts > skip);
+
+        return ResultFactory.successfulMsg("Success");
     }
 
     /**
@@ -235,35 +244,35 @@ public class AddressBookResource extends AbstractResource {
      * @param customContactObjects
      * @return
      */
-    public <T> Optional<JobStatus> importList(Long addressBookId, List<T> customContactObjects) {
-        Optional<String> csvFilePath = CsvUtil.writeCsv(customContactObjects);
-        if (!csvFilePath.isPresent()) {
-            return Optional.empty();
+    public <T> Result<JobStatus> importList(Long addressBookId, List<T> customContactObjects) {
+        Result<String> csvFilePath = CsvUtil.writeCsv(customContactObjects);
+        if (!csvFilePath.isSuccessAndNotNull()) {
+            return ResultFactory.copyWithoutData(csvFilePath);
         }
-        return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.get(), JobStatus.class);
+        return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.getData(), JobStatus.class);
     }
 
-    public <T> Optional<JobStatus> importList(Long addressBookId, List<T> customContactObjects, List<String> csvHeaders) {
-        Optional<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders);
-        if (!csvFilePath.isPresent()) {
-            return Optional.empty();
+    public <T> Result<JobStatus> importList(Long addressBookId, List<T> customContactObjects, List<String> csvHeaders) {
+        Result<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders);
+        if (!csvFilePath.isSuccessAndNotNull()) {
+            return ResultFactory.copyWithoutData(csvFilePath);
         }
-        return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.get(), JobStatus.class);
+        return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.getData(), JobStatus.class);
     }
 
-    public <T> Optional<JobStatus> importList(Long addressBookId, List<T> customContactObjects, List<String> csvHeaders, List<String> fieldNames) {
-        Optional<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders, fieldNames);
-        if (!csvFilePath.isPresent()) {
-            return Optional.empty();
+    public <T> Result<JobStatus> importList(Long addressBookId, List<T> customContactObjects, List<String> csvHeaders, List<String> fieldNames) {
+        Result<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders, fieldNames);
+        if (!csvFilePath.isSuccessAndNotNull()) {
+            return ResultFactory.copyWithoutData(csvFilePath);
         }
-        return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.get(), JobStatus.class);
+        return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.getData(), JobStatus.class);
     }
 
-    public <T> Optional<JobStatus> importList(Long addressBookId, List<T> customContactObjects, List<String> csvHeaders, List<String> fieldNames, CellProcessor[] cellProcessors) {
-        Optional<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders, fieldNames, cellProcessors);
-        if (!csvFilePath.isPresent()) {
-            return Optional.empty();
+    public <T> Result<JobStatus> importList(Long addressBookId, List<T> customContactObjects, List<String> csvHeaders, List<String> fieldNames, CellProcessor[] cellProcessors) {
+        Result<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders, fieldNames, cellProcessors);
+        if (!csvFilePath.isSuccessAndNotNull()) {
+            return ResultFactory.copyWithoutData(csvFilePath);
         }
-        return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.get(), JobStatus.class);
+        return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.getData(), JobStatus.class);
     }
 }

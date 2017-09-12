@@ -7,7 +7,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+
+import com.lindar.wellrested.vo.Result;
+import com.lindar.wellrested.vo.ResultFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,22 +25,26 @@ public class CsvUtil {
 
     private static final String CSV_FILE_NAME = "dotmailerContacts-%s.csv";
 
-    public static <T> Optional<String> writeCsv(final List<T> objectsToWrite) {
+    private static final String ERROR_CSV = "ERROR_CSV";
+
+
+
+    public static <T> Result<String> writeCsv(final List<T> objectsToWrite) {
         return writeCsv(objectsToWrite, null, null, null);
     }
 
-    public static <T> Optional<String> writeCsv(final List<T> objectsToWrite, List<String> csvHeaders) {
+    public static <T> Result<String> writeCsv(final List<T> objectsToWrite, List<String> csvHeaders) {
         return writeCsv(objectsToWrite, csvHeaders, null, null);
     }
 
-    public static <T> Optional<String> writeCsv(final List<T> objectsToWrite, List<String> csvHeaders, List<String> fieldNames) {
+    public static <T> Result<String> writeCsv(final List<T> objectsToWrite, List<String> csvHeaders, List<String> fieldNames) {
         return writeCsv(objectsToWrite, csvHeaders, fieldNames, null);
     }
 
-    public static <T> Optional<String> writeCsv(final List<T> objectsToWrite, List<String> csvHeaders, List<String> fieldNames, final CellProcessor[] processors) {
+    public static <T> Result<String> writeCsv(final List<T> objectsToWrite, List<String> csvHeaders, List<String> fieldNames, final CellProcessor[] processors) {
         if (objectsToWrite == null || objectsToWrite.isEmpty() || objectsToWrite.get(0) == null) {
             log.warn("Nothing to write. The list of objects is empty or null elements provided");
-            return Optional.empty();
+            return ResultFactory.failed("List is empty, nothing to write", ERROR_CSV);
         }
 
         if (fieldNames == null || fieldNames.isEmpty()) {
@@ -67,11 +73,11 @@ public class CsvUtil {
                     beanWriter.write(obj, fieldNamesArray);
                 }
             }
-            return Optional.of(filePath);
+            return ResultFactory.successful(filePath);
         } catch (IOException e) {
             log.error("Error occured while writing csv file: {}", e);
+            return ResultFactory.failed(e.getMessage(), ERROR_CSV);
         }
-        return Optional.empty();
     }
     
     public static <T> List<String> listAllVariablesWithGettersIgnoreGetClass(T object) {

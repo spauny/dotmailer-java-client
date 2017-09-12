@@ -1,6 +1,8 @@
 package com.lindar.dotmailer;
 
 import java.util.Optional;
+
+import com.lindar.wellrested.vo.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import com.lindar.dotmailer.api.AccountInfoResource;
@@ -72,9 +74,9 @@ public class Dotmailer {
      */
     public final static Dotmailer autobuild(String username, String password) throws InvalidAccountException {
         Dotmailer dotmailer = Dotmailer.build(username, password);
-        Optional<AccountInfo> accountInfo = dotmailer.accountInfo().get();
-        if (accountInfo.isPresent()) {
-            Optional<DMProperty> apiEndpointProp = accountInfo.get().getProperties().stream()
+        Result<AccountInfo> accountInfo = dotmailer.accountInfo().get();
+        if (accountInfo.isSuccessAndNotNull()) {
+            Optional<DMProperty> apiEndpointProp = accountInfo.getData().getProperties().stream()
                     .filter(prop -> API_ENDPOINT_PROP.equals(prop.getName()))
                     .findAny();
             if (apiEndpointProp.isPresent() && StringUtils.isNotBlank(apiEndpointProp.get().getValue())) {
