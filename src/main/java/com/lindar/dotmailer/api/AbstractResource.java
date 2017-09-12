@@ -35,7 +35,7 @@ public abstract class AbstractResource {
     protected static final int MAX_CONTACTS_TO_PROCESS_PER_STEP = 50000;
 
     @Getter
-    private long recordsSynced = 0l;
+    private long recordsSynced = 0L;
 
     @Getter
     private final DMAccessCredentials accessCredentials;
@@ -230,7 +230,7 @@ public abstract class AbstractResource {
         return response != null && (response.getStatusCode() == 200 || response.getStatusCode() == 201 || response.getStatusCode() == 202);
     }
 
-    protected Result parseErrorResponse(WellRestedResponse response) {
+    protected <T> Result<T> parseErrorResponse(WellRestedResponse response) {
         ErrorResponse errorResponse = response.fromJson().castTo(ErrorResponse.class);
         if (errorResponse == null || errorResponse.getMessage() == null || StringUtils.isBlank(errorResponse.getMessage())) {
             return ResultFactory.failed("Unknown Error", "UNKNOWN_ERROR");
