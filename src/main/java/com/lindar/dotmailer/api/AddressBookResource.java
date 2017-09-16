@@ -1,22 +1,22 @@
 package com.lindar.dotmailer.api;
 
+import com.google.gson.JsonDeserializer;
+import com.google.gson.reflect.TypeToken;
+import com.lindar.dotmailer.util.CsvUtil;
+import com.lindar.dotmailer.util.DefaultEndpoints;
+import com.lindar.dotmailer.util.PersonalizedContactsProcessFunction;
 import com.lindar.dotmailer.vo.api.AddressBook;
+import com.lindar.dotmailer.vo.api.Contact;
 import com.lindar.dotmailer.vo.api.JobStatus;
 import com.lindar.dotmailer.vo.api.PersonalisedContact;
 import com.lindar.dotmailer.vo.api.SuppressedContact;
-import com.lindar.dotmailer.vo.api.Contact;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.reflect.TypeToken;
+import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
 import com.lindar.wellrested.vo.Result;
-import com.lindar.wellrested.vo.ResultFactory;
+import com.lindar.wellrested.vo.ResultBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.http.HttpStatus;
 import org.joda.time.DateTime;
-import com.lindar.dotmailer.util.CsvUtil;
-import com.lindar.dotmailer.util.DefaultEndpoints;
-import com.lindar.dotmailer.util.PersonalizedContactsProcessFunction;
-import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
 import java.util.Date;
@@ -55,9 +55,6 @@ public class AddressBookResource extends AbstractResource {
 
     /**
      * List address book contacts. DEFAULT ATTRS: No limit and without full data
-     *
-     * @param addressBookId
-     * @return
      */
     public Result<List<Contact>> listContacts(Long addressBookId) {
         return listContacts(addressBookId, false, 0);
@@ -82,10 +79,6 @@ public class AddressBookResource extends AbstractResource {
 
     /**
      * Gets a list of contacts who have unsubscribed since a given date from a given address book. No limit
-     *
-     * @param addressBookId
-     * @param since
-     * @return
      */
     public Result<List<SuppressedContact>> listUnsubscribedContacts(Long addressBookId, Date since) {
         return listUnsubscribedContacts(addressBookId, since, 0);
@@ -212,7 +205,7 @@ public class AddressBookResource extends AbstractResource {
 
         Result<AddressBook> addressBookResult = get(addressBookId);
         if(!addressBookResult.isSuccessAndNotNull()){
-            return ResultFactory.copyWithoutData(addressBookResult);
+            return ResultBuilder.of(addressBookResult).buildAndIgnoreData();
         }
 
         AddressBook addressBook = addressBookResult.getData();
@@ -233,7 +226,7 @@ public class AddressBookResource extends AbstractResource {
             skip += MAX_CONTACTS_TO_PROCESS_PER_STEP;
         } while (nrOfContacts > skip);
 
-        return ResultFactory.successfulMsg("Success");
+        return ResultBuilder.successfulWithoutData("Success");
     }
 
     /**
@@ -247,7 +240,7 @@ public class AddressBookResource extends AbstractResource {
     public <T> Result<JobStatus> importList(Long addressBookId, List<T> customContactObjects) {
         Result<String> csvFilePath = CsvUtil.writeCsv(customContactObjects);
         if (!csvFilePath.isSuccessAndNotNull()) {
-            return ResultFactory.copyWithoutData(csvFilePath);
+            return ResultBuilder.of(csvFilePath).buildAndIgnoreData();
         }
         return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.getData(), JobStatus.class);
     }
@@ -255,7 +248,7 @@ public class AddressBookResource extends AbstractResource {
     public <T> Result<JobStatus> importList(Long addressBookId, List<T> customContactObjects, List<String> csvHeaders) {
         Result<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders);
         if (!csvFilePath.isSuccessAndNotNull()) {
-            return ResultFactory.copyWithoutData(csvFilePath);
+            return ResultBuilder.of(csvFilePath).buildAndIgnoreData();
         }
         return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.getData(), JobStatus.class);
     }
@@ -263,7 +256,7 @@ public class AddressBookResource extends AbstractResource {
     public <T> Result<JobStatus> importList(Long addressBookId, List<T> customContactObjects, List<String> csvHeaders, List<String> fieldNames) {
         Result<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders, fieldNames);
         if (!csvFilePath.isSuccessAndNotNull()) {
-            return ResultFactory.copyWithoutData(csvFilePath);
+            return ResultBuilder.of(csvFilePath).buildAndIgnoreData();
         }
         return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.getData(), JobStatus.class);
     }
@@ -271,7 +264,7 @@ public class AddressBookResource extends AbstractResource {
     public <T> Result<JobStatus> importList(Long addressBookId, List<T> customContactObjects, List<String> csvHeaders, List<String> fieldNames, CellProcessor[] cellProcessors) {
         Result<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders, fieldNames, cellProcessors);
         if (!csvFilePath.isSuccessAndNotNull()) {
-            return ResultFactory.copyWithoutData(csvFilePath);
+            return ResultBuilder.of(csvFilePath).buildAndIgnoreData();
         }
         return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.getData(), JobStatus.class);
     }

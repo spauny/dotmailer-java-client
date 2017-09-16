@@ -8,7 +8,7 @@ import com.lindar.dotmailer.vo.api.CampaignInfo;
 import com.lindar.dotmailer.vo.api.CampaignSummary;
 import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
 import com.lindar.wellrested.vo.Result;
-import com.lindar.wellrested.vo.ResultFactory;
+import com.lindar.wellrested.vo.ResultBuilder;
 import org.joda.time.DateTime;
 
 import java.util.Date;
@@ -24,8 +24,6 @@ public class CampaignResource extends AbstractResource {
     /**
      * Returns a list of Campaigns including only the base information and <b>without email html content</b>.
      * If you require all the information about each campaign then use the <b>listComprehensive</b> method
-     * 
-     * @return
      */
     public Result<List<CampaignInfo>> list() {
         return sendAndGetFullList(DefaultEndpoints.CAMPAIGNS.getPath(), new TypeToken<List<CampaignInfo>>() {});
@@ -34,8 +32,6 @@ public class CampaignResource extends AbstractResource {
     /**
      * Returns a list of Campaigns including only the base information and <b>without email html content</b>.
      * If you require all the information about each campaign then use the <b>listComprehensive</b> method
-     * 
-     * @return
      */
     public Result<List<CampaignInfo>> listWithActivitySince(Date startDate) {
         return sendAndGetFullList(pathWithParam(DefaultEndpoints.CAMPAIGNS_WITH_ACTIVITY_SINCE.getPath(), new DateTime(startDate).toString(DM_DATE_FORMAT)), new TypeToken<List<CampaignInfo>>() {});
@@ -49,19 +45,17 @@ public class CampaignResource extends AbstractResource {
     /**
      * Returns a list of Campaigns including html content, summary and all the activities. 
      * If you require only the base information about each campaign then use the <b>list</b> method
-     * 
-     * @return
      */
     public Result<List<Campaign>> listComprehensive() {
-        Result<List<CampaignInfo>> campaigns = sendAndGetFullList(DefaultEndpoints.CAMPAIGNS.getPath(), new TypeToken<List<CampaignInfo>>() {});
-        if (!campaigns.isSuccessAndNotNull() || campaigns.getData().isEmpty()) {
-            return ResultFactory.copyWithoutData(campaigns);
+        Result<List<CampaignInfo>> campaignsResult = sendAndGetFullList(DefaultEndpoints.CAMPAIGNS.getPath(), new TypeToken<List<CampaignInfo>>() {});
+        if (!campaignsResult.isSuccessAndNotNull() || campaignsResult.getData().isEmpty()) {
+            return ResultBuilder.of(campaignsResult).buildAndIgnoreData();
         }
-        List<Campaign> comprehensiveCampaigns = campaigns.getData().stream()
+        List<Campaign> comprehensiveCampaigns = campaignsResult.getData().stream()
                 .map(baseCampaign -> get(baseCampaign.getId()).orElse(new Campaign(baseCampaign)))
                 .collect(Collectors.toList());
         
-        return ResultFactory.successful(comprehensiveCampaigns);
+        return ResultBuilder.successful(comprehensiveCampaigns);
     }
     
     /**
@@ -70,20 +64,17 @@ public class CampaignResource extends AbstractResource {
      * for each type of information and stitch the data together in one Campaign object.
      * 
      * Please note: if you only need the info, the summary or the activity then use the specific methods allocated. Enjoy!
-     * 
-     * @param id
-     * @return
      */
     public Result<Campaign> get(Long id) {
         Result<CampaignInfo> info = info(id);
         if (!info.isSuccessAndNotNull()) {
-            return ResultFactory.copyWithoutData(info);
+            return ResultBuilder.of(info).buildAndIgnoreData();
         }
         Campaign campaign = new Campaign(info.getData());
         summary(id).ifSuccessAndNotNull(campaign::setSummary);
         activities(id).ifSuccessAndNotNull(campaign::setActivities);
 
-        return ResultFactory.successful(campaign);
+        return ResultBuilder.successful(campaign);
     }
     
     public Result<CampaignInfo> info(Long id) {
