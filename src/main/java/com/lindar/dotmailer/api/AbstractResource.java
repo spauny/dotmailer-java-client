@@ -2,7 +2,10 @@ package com.lindar.dotmailer.api;
 
 import com.google.gson.JsonDeserializer;
 import com.google.gson.reflect.TypeToken;
+import com.lindar.dotmailer.util.DefaultEndpoints;
 import com.lindar.dotmailer.util.ErrorTranslator;
+import com.lindar.dotmailer.util.PersonalizedContactsProcessFunction;
+import com.lindar.dotmailer.vo.api.PersonalisedContact;
 import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
 import com.lindar.dotmailer.vo.internal.ErrorResponse;
 import com.lindar.wellrested.WellRestedRequest;
@@ -11,11 +14,13 @@ import com.lindar.wellrested.vo.ResultBuilder;
 import com.lindar.wellrested.vo.WellRestedResponse;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 @Slf4j
 public abstract class AbstractResource {
@@ -32,6 +37,7 @@ public abstract class AbstractResource {
     private static final String QUESTION = "?";
     private static final String EQUAL = "=";
     static final int DEFAULT_MAX_SELECT = 1000;
+    static final int DEFAULT_PER_STEP = 1000;
     static final int MAX_CONTACTS_TO_PROCESS_PER_STEP = 50000;
 
     @Getter
@@ -196,6 +202,21 @@ public abstract class AbstractResource {
             }
         } while (newResultsSize != 0 && (limit <= 0 || allResults.size() < limit));
         return ResultBuilder.successful(allResults);
+    }
+
+    protected <T> void sendAndProcessList(String resourcePath, Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<T>> typeToken, Consumer<List<T>> consumer) {
+        sendAndProcessList(resourcePath, clazz, jsonDeserializer, typeToken, DEFAULT_MAX_SELECT, DEFAULT_MAX_SELECT, consumer);
+    }
+
+    protected <T> void sendAndProcessList(String resourcePath, Class<T> clazz, JsonDeserializer<T> jsonDeserializer, TypeToken<List<T>> typeToken, int maxLimit, int perStep, Consumer<List<T>> consumer) {
+        int skip = 0;
+
+        Result<List<T>> results;
+        do {
+            results = sendAndGetFullList(resourcePath, clazz, jsonDeserializer, typeToken, maxLimit, perStep, skip);
+            results.ifSuccessAndNotNull(consumer);
+            skip += perStep;
+        } while (results.isSuccessAndNotNull() && !results.getData().isEmpty());
     }
 
     protected <T> Result<List<T>> sendAndGetSingleList(String resourcePath, TypeToken<List<T>> typeToken) {

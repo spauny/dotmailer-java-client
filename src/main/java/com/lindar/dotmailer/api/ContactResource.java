@@ -21,6 +21,7 @@ import org.supercsv.cellprocessor.ift.CellProcessor;
 
 import java.util.Date;
 import java.util.List;
+import java.util.function.Consumer;
 
 @Slf4j
 public class ContactResource extends AbstractResource {
@@ -305,6 +306,18 @@ public class ContactResource extends AbstractResource {
             return sendAndGetFullList(rootPath, new TypeToken<List<SuppressedContact>>() {}, maxSelect, limit);
         }
         return sendAndGetFullList(rootPath, new TypeToken<List<SuppressedContact>>() {});
+    }
+
+
+    public void processSuppressed(Date since, boolean roundToDate, Consumer<List<SuppressedContact>> consumer) {
+        processSuppressed(since, roundToDate, DEFAULT_PER_STEP, consumer);
+    }
+
+    public void processSuppressed(Date since, boolean roundToDate, int perStep, Consumer<List<SuppressedContact>> consumer) {
+        String dateTemplate = roundToDate ? DM_DATE_FORMAT : DM_DATE_TIME_FORMAT;
+        String rootPath = pathWithParam(DefaultEndpoints.CONTACTS_SUPPRESSED_SINCE_DATE.getPath(), new DateTime(since).toString(dateTemplate));
+
+        sendAndProcessList(rootPath, null, null,  new TypeToken<List<SuppressedContact>>() {}, DEFAULT_MAX_SELECT, perStep, consumer);
     }
     
     /**
