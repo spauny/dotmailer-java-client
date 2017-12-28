@@ -268,4 +268,8 @@ public class AddressBookResource extends AbstractResource {
         }
         return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath.getData(), JobStatus.class);
     }
+
+    public <T> Result<JobStatus> importList(Long addressBookId, String csvFilePath) {
+        return postFileAndGet(pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_IMPORT.getPath(), addressBookId), csvFilePath, JobStatus.class);
+    }
 }

@@ -16,6 +16,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.entity.ContentType;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -116,7 +117,7 @@ public abstract class AbstractResource {
         WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
 
         File postedFile = new File(filePath);
-        WellRestedResponse response = request.post().jsonContent(postedFile).submit();
+        WellRestedResponse response = request.post().file(postedFile).submit();
         postedFile.delete();
 
         if (validResponse(response)) {
