@@ -35,9 +35,12 @@ public enum DefaultEndpoints {
     CONTACTS_IMPORT ("/contacts/import"),
     CONTACTS_IMPORT_STATUS ("/contacts/import/%s"),
     CONTACTS_IMPORT_REPORT ("/contacts/import/%s/report"),
-    CONTACTS_IMPORT_REPORT_FAULTS ("/contacts/import/%s/report-faults");
-    
-    
+    CONTACTS_IMPORT_REPORT_FAULTS ("/contacts/import/%s/report-faults"),
+
+    DATA_FIELDS ("/data-fields"),
+    DATA_FIELD ("/data-fields/%s");
+
+
     @Getter
     private String path;
     

@@ -2,13 +2,10 @@ package com.lindar.dotmailer;
 
 import java.util.Optional;
 
+import com.lindar.dotmailer.api.*;
 import com.lindar.wellrested.vo.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import com.lindar.dotmailer.api.AccountInfoResource;
-import com.lindar.dotmailer.api.AddressBookResource;
-import com.lindar.dotmailer.api.CampaignResource;
-import com.lindar.dotmailer.api.ContactResource;
 import com.lindar.dotmailer.util.DefaultEndpoints;
 import com.lindar.dotmailer.util.InvalidAccountException;
 import com.lindar.dotmailer.vo.api.AccountInfo;
@@ -32,6 +29,8 @@ public class Dotmailer {
     private AddressBookResource addressBookResource;
     private ContactResource contactResource;
     private CampaignResource campaignResource;
+    private DataFieldResource dataFieldResource;
+
 
     private Dotmailer(DMAccessCredentials accessCredentials) {
         this.accessCredentials = accessCredentials;
@@ -39,6 +38,7 @@ public class Dotmailer {
         this.addressBookResource = new AddressBookResource(accessCredentials);
         this.contactResource = new ContactResource(accessCredentials);
         this.campaignResource = new CampaignResource(accessCredentials);
+        this.dataFieldResource = new DataFieldResource(accessCredentials);
     }
 
     /**
@@ -157,6 +157,15 @@ public class Dotmailer {
      */
     public CampaignResource campaign() {
         return campaignResource;
+    }
+
+    /**
+     * returns a data fields resource that allows you to interact with all data fields endpoints
+     *
+     * @return
+     */
+    public DataFieldResource dataField() {
+        return dataFieldResource;
     }
 
 }

@@ -6,7 +6,7 @@
 
     <groupId>com.lindar</groupId>
     <artifactId>dotmailer-client</artifactId>
-    <version>1.4.0</version>
+    <version>1.5.0</version>
     
     <name>Dotmailer Client</name>
     <description>Dotmailer API client written in Java</description>
@@ -39,7 +39,7 @@
         <developerConnection>scm:git:git@github.com:lindar-open/dotmailer-java-client.git</developerConnection>
         <url>https://github.com/lindar-open/dotmailer-java-client.git</url>
     </scm>
-    
+
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
