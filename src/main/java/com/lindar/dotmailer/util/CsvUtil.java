@@ -1,15 +1,7 @@
 package com.lindar.dotmailer.util;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import com.lindar.wellrested.vo.Result;
-import com.lindar.wellrested.vo.ResultFactory;
+import com.lindar.wellrested.vo.ResultBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -17,6 +9,14 @@ import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.CsvBeanWriter;
 import org.supercsv.io.ICsvBeanWriter;
 import org.supercsv.prefs.CsvPreference;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 public class CsvUtil {
@@ -44,7 +44,7 @@ public class CsvUtil {
     public static <T> Result<String> writeCsv(final List<T> objectsToWrite, List<String> csvHeaders, List<String> fieldNames, final CellProcessor[] processors) {
         if (objectsToWrite == null || objectsToWrite.isEmpty() || objectsToWrite.get(0) == null) {
             log.warn("Nothing to write. The list of objects is empty or null elements provided");
-            return ResultFactory.failed("List is empty, nothing to write", ERROR_CSV);
+            return ResultBuilder.failed().msg("List is empty, nothing to write").code(ERROR_CSV).buildAndIgnoreData();
         }
 
         if (fieldNames == null || fieldNames.isEmpty()) {
@@ -73,10 +73,10 @@ public class CsvUtil {
                     beanWriter.write(obj, fieldNamesArray);
                 }
             }
-            return ResultFactory.successful(filePath);
+            return ResultBuilder.successful(filePath);
         } catch (IOException e) {
             log.error("Error occured while writing csv file: {}", e);
-            return ResultFactory.failed(e.getMessage(), ERROR_CSV);
+            return ResultBuilder.failed().msg(e.getMessage()).code(ERROR_CSV).buildAndIgnoreData();
         }
     }
     
