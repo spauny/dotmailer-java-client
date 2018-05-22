@@ -13,7 +13,7 @@ import com.lindar.dotmailer.vo.api.PersonalisedContact;
 import com.lindar.dotmailer.vo.api.SuppressedContact;
 import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
 import com.lindar.wellrested.vo.Result;
-import com.lindar.wellrested.vo.ResultFactory;
+import com.lindar.wellrested.vo.ResultBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.joda.time.DateTime;
@@ -368,7 +368,7 @@ public class ContactResource extends AbstractResource {
     public <T> Result<JobStatus> importList(List<T> customContactObjects) {
         Result<String> csvFilePath = CsvUtil.writeCsv(customContactObjects);
         if (!csvFilePath.isSuccessAndNotNull()) {
-            return ResultFactory.copyWithoutData(csvFilePath);
+            return ResultBuilder.failed().msg(csvFilePath.getMsg()).code(csvFilePath.getCode()).buildAndIgnoreData();
         }
         return postFileAndGet(DefaultEndpoints.CONTACTS_IMPORT.getPath(), csvFilePath.getData(), JobStatus.class);
     }
@@ -376,7 +376,7 @@ public class ContactResource extends AbstractResource {
     public <T> Result<JobStatus> importList(List<T> customContactObjects, List<String> csvHeaders) {
         Result<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders);
         if (!csvFilePath.isSuccessAndNotNull()) {
-            return ResultFactory.copyWithoutData(csvFilePath);
+            return ResultBuilder.failed().msg(csvFilePath.getMsg()).code(csvFilePath.getCode()).buildAndIgnoreData();
         }
         return postFileAndGet(DefaultEndpoints.CONTACTS_IMPORT.getPath(), csvFilePath.getData(), JobStatus.class);
     }
@@ -384,7 +384,7 @@ public class ContactResource extends AbstractResource {
     public <T> Result<JobStatus> importList(List<T> customContactObjects, List<String> csvHeaders, List<String> fieldNames) {
         Result<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders, fieldNames);
         if (!csvFilePath.isSuccessAndNotNull()) {
-            return ResultFactory.copyWithoutData(csvFilePath);
+            return ResultBuilder.failed().msg(csvFilePath.getMsg()).code(csvFilePath.getCode()).buildAndIgnoreData();
         }
         return postFileAndGet(DefaultEndpoints.CONTACTS_IMPORT.getPath(), csvFilePath.getData(), JobStatus.class);
     }
@@ -392,7 +392,7 @@ public class ContactResource extends AbstractResource {
     public <T> Result<JobStatus> importList(List<T> customContactObjects, List<String> csvHeaders, List<String> fieldNames, CellProcessor[] cellProcessors) {
         Result<String> csvFilePath = CsvUtil.writeCsv(customContactObjects, csvHeaders, fieldNames, cellProcessors);
         if (!csvFilePath.isSuccessAndNotNull()) {
-            return ResultFactory.copyWithoutData(csvFilePath);
+            return ResultBuilder.failed().msg(csvFilePath.getMsg()).code(csvFilePath.getCode()).buildAndIgnoreData();
         }
         return postFileAndGet(DefaultEndpoints.CONTACTS_IMPORT.getPath(), csvFilePath.getData(), JobStatus.class);
     }
