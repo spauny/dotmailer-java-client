@@ -38,7 +38,11 @@ public enum DefaultEndpoints {
     CONTACTS_IMPORT_REPORT_FAULTS ("/contacts/import/%s/report-faults"),
 
     DATA_FIELDS ("/data-fields"),
-    DATA_FIELD ("/data-fields/%s");
+    DATA_FIELD ("/data-fields/%s"),
+
+    EMAIL_TRIGGERED_CAMPAIGN ("/email/triggered-campaign"),
+    TRANSACTIONAL_EMAIL_STATS_SINCE_DATE ("/email/stats/since-date/%s");
+
 
 
     @Getter

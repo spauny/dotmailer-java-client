@@ -30,6 +30,7 @@ public class Dotmailer {
     private ContactResource contactResource;
     private CampaignResource campaignResource;
     private DataFieldResource dataFieldResource;
+    private TransactionalResource transactionalResource;
 
 
     private Dotmailer(DMAccessCredentials accessCredentials) {
@@ -39,6 +40,7 @@ public class Dotmailer {
         this.contactResource = new ContactResource(accessCredentials);
         this.campaignResource = new CampaignResource(accessCredentials);
         this.dataFieldResource = new DataFieldResource(accessCredentials);
+        this.transactionalResource = new TransactionalResource(accessCredentials);
     }
 
     /**
@@ -166,6 +168,15 @@ public class Dotmailer {
      */
     public DataFieldResource dataField() {
         return dataFieldResource;
+    }
+
+    /**
+     * returns a transactional resource that allows you to send transactional emails
+     *
+     * @return
+     */
+    public TransactionalResource transactional() {
+        return transactionalResource;
     }
 
 }
