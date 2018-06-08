@@ -2,10 +2,7 @@ package com.lindar.dotmailer.api;
 
 import com.google.gson.JsonDeserializer;
 import com.google.gson.reflect.TypeToken;
-import com.lindar.dotmailer.util.DefaultEndpoints;
 import com.lindar.dotmailer.util.ErrorTranslator;
-import com.lindar.dotmailer.util.PersonalizedContactsProcessFunction;
-import com.lindar.dotmailer.vo.api.PersonalisedContact;
 import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
 import com.lindar.dotmailer.vo.internal.ErrorResponse;
 import com.lindar.wellrested.WellRestedRequest;
@@ -14,9 +11,7 @@ import com.lindar.wellrested.vo.ResultBuilder;
 import com.lindar.wellrested.vo.WellRestedResponse;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.entity.ContentType;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -103,6 +98,15 @@ public abstract class AbstractResource {
         WellRestedResponse response = request.post().jsonContent(objectToPost).submit();
         if (validResponse(response)) {
             return ResultBuilder.successful(response.fromJson().castTo(responseClass));
+        }
+        return parseErrorResponse(response);
+    }
+
+    protected Result<Void> postAndGetBlankResponse(String resourcePath, Object objectToPost) {
+        WellRestedRequest request = buildRequestFromResourcePath(resourcePath);
+        WellRestedResponse response = request.post().jsonContent(objectToPost).submit();
+        if (validBlankResponse(response)) {
+            return ResultBuilder.successful().buildAndIgnoreData();
         }
         return parseErrorResponse(response);
     }

@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.Map;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,5 +12,5 @@ import java.util.Map;
 public class EmailTriggeredCampaignRequest {
     private List<String> toAddresses;
     private int campaignId;
-    private Map<String, String> personalizationValues;
+    private List<NameValue> personalizationValues;
 }

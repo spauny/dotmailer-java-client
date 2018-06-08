@@ -6,7 +6,7 @@
 
     <groupId>com.lindar</groupId>
     <artifactId>dotmailer-client</artifactId>
-    <version>1.5.1</version>
+    <version>1.5.2-SNAPSHOT</version>
     
     <name>Dotmailer Client</name>
     <description>Dotmailer API client written in Java</description>

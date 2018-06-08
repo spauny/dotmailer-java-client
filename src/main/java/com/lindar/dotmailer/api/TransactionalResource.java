@@ -5,6 +5,7 @@ import com.lindar.dotmailer.vo.api.AggregatedBy;
 import com.lindar.dotmailer.vo.api.TransactionalEmailStatistics;
 import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
 import com.lindar.dotmailer.vo.internal.EmailTriggeredCampaignRequest;
+import com.lindar.dotmailer.vo.internal.NameValue;
 import com.lindar.wellrested.vo.Result;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class TransactionalResource extends AbstractResource {
@@ -24,19 +26,19 @@ public class TransactionalResource extends AbstractResource {
         super(accessCredentials);
     }
 
-    public int send(List<String> toAddresses, int campaignId, Map<String, String> personalisation) {
-        return post(DefaultEndpoints.EMAIL_TRIGGERED_CAMPAIGN.getPath(), new EmailTriggeredCampaignRequest(toAddresses, campaignId, personalisation));
+    public Result<Void> send(List<String> toAddresses, int campaignId, Map<String, String> personalisation) {
+        return postAndGetBlankResponse(DefaultEndpoints.EMAIL_TRIGGERED_CAMPAIGN.getPath(), new EmailTriggeredCampaignRequest(toAddresses, campaignId, toNameValueList(personalisation)));
     }
 
-    public int send(List<String> toAddresses, int campaignId) {
+    public Result<Void> send(List<String> toAddresses, int campaignId) {
         return send(toAddresses, campaignId, new HashMap<>());
     }
 
-    public int send(String email, int campaignId, Map<String, String> personalisation) {
+    public Result<Void> send(String email, int campaignId, Map<String, String> personalisation) {
         return send(Collections.singletonList(email), campaignId, personalisation);
     }
 
-    public int send(String email, int campaignId) {
+    public Result<Void> send(String email, int campaignId) {
         return send(Collections.singletonList(email), campaignId, new HashMap<>());
     }
 
@@ -65,7 +67,7 @@ public class TransactionalResource extends AbstractResource {
     public Result<TransactionalEmailStatistics> statistics(@NonNull LocalDate startDate, AggregatedBy aggregatedBy) {
         return statistics(startDate, null, aggregatedBy);
     }
-    
+
     public Result<TransactionalEmailStatistics> statistics(@NonNull LocalDateTime startDate, AggregatedBy aggregatedBy) {
         return statistics(startDate, null, aggregatedBy);
     }
@@ -82,6 +84,13 @@ public class TransactionalResource extends AbstractResource {
         }
 
         return sendAndGet(path, TransactionalEmailStatistics.class);
+    }
+
+    private List<NameValue> toNameValueList(Map<String, String> map) {
+        if(map == null) return null;
+        return map.entrySet().stream()
+                .map(entry -> new NameValue(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
     }
 
 }
