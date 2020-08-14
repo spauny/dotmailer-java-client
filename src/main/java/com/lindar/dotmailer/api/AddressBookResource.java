@@ -15,7 +15,6 @@ import com.lindar.wellrested.vo.Result;
 import com.lindar.wellrested.vo.ResultBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.http.HttpStatus;
 import org.joda.time.DateTime;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
@@ -48,9 +47,9 @@ public class AddressBookResource extends AbstractResource {
         return postAndGet(path, contact);
     }
 
-    public boolean deleteContacts(Long addressBookId, List<Long> contactIds) {
+    public Result<JobStatus> deleteContacts(Long addressBookId, List<Long> contactIds) {
         String path = pathWithId(DefaultEndpoints.ADDRESS_BOOK_CONTACTS_DELETE.getPath(), addressBookId);
-        return post(path, contactIds) == HttpStatus.SC_NO_CONTENT; // http 204 no content response
+        return postAndGet(path, contactIds, JobStatus.class);
     }
 
     /**
