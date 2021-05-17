@@ -2,7 +2,7 @@ package com.lindar.dotmailer.api;
 
 import com.google.gson.reflect.TypeToken;
 import com.lindar.dotmailer.util.DefaultEndpoints;
-import com.lindar.dotmailer.vo.api.NewProgram;
+import com.lindar.dotmailer.vo.api.NewProgramEnrolment;
 import com.lindar.dotmailer.vo.api.Program;
 import com.lindar.dotmailer.vo.api.ProgramEnrolment;
 import com.lindar.dotmailer.vo.internal.DMAccessCredentials;
@@ -28,9 +28,9 @@ public class ProgramResource extends AbstractResource {
         return sendAndGet(path, Program.class);
     }
 
-    public Result<ProgramEnrolment> create(NewProgram newProgram) {
+    public Result<ProgramEnrolment> create(NewProgramEnrolment newProgramEnrolment) {
         String path = DefaultEndpoints.PROGRAM_ENROLMENTS.getPath();
-        return postAndGet(path, newProgram, ProgramEnrolment.class);
+        return postAndGet(path, newProgramEnrolment, ProgramEnrolment.class);
     }
 
     public Result<ProgramEnrolment> getEnrolment(String id) {

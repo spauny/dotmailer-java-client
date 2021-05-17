@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class NewProgram {
+public class NewProgramEnrolment {
 
     private Long       programId;
     private List<Long> contacts;
