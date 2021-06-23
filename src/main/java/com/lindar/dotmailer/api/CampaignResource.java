@@ -102,4 +102,9 @@ public class CampaignResource extends AbstractResource {
     public Result<List<CampaignContactActivity>> activitiesSince(Long id, Date startDate) {
         return activitiesSince(id, startDate, true);
     }
+
+    public Result<CampaignInfo> update(CampaignInfo updateCampaign) {
+        return putAndGet(pathWithId(DefaultEndpoints.CAMPAIGN_INFO.getPath(), updateCampaign.getId()), updateCampaign);
+    }
+
 }
