@@ -261,6 +261,9 @@ public abstract class AbstractResource {
     private <T> Result<T> parseErrorResponse(WellRestedResponse response) {
         ErrorResponse errorResponse = response.fromJson().castTo(ErrorResponse.class);
         if (errorResponse == null || errorResponse.getMessage() == null || StringUtils.isBlank(errorResponse.getMessage())) {
+            if(response.isConnectionTimeout() || response.isSocketTimeout()) {
+                return ResultBuilder.failed().msg("Timeout Error").code("TIMEOUT_ERROR").buildAndIgnoreData();
+            }
             return ResultBuilder.failed().msg("Unknown Error").code("UNKNOWN_ERROR").buildAndIgnoreData();
         }
 
